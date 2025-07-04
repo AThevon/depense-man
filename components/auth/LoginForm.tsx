@@ -50,10 +50,10 @@ const LoginForm = () => {
               <LogIn className="h-8 w-8 text-primary" />
             </div>
             <h1 className="text-2xl font-bold text-text mb-2">
-              Dépense Manager
+              Dépense-Man!
             </h1>
             <p className="text-secondary">
-              Connectez-vous pour gérer vos finances
+              Attention aux sous...
             </p>
           </CardHeader>
 

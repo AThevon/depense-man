@@ -1,4 +1,4 @@
-# Dépense Manager
+# Dépense-Man !
 
 Une application PWA moderne pour gérer vos finances mensuelles avec Firebase et Next.js.
 

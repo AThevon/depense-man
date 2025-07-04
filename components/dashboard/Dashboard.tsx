@@ -112,8 +112,8 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-text">Dépense Manager</h1>
-            <p className="text-secondary mt-1">Gérez vos finances mensuelles</p>
+            <h1 className="text-3xl font-bold text-text">Dépense-Man!</h1>
+            <p className="text-secondary mt-1">Attention aux sous...</p>
           </div>
           <Button
             variant="ghost"

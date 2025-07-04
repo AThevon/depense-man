@@ -15,26 +15,26 @@ const fontMono = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "Dépense Manager",
+  title: "Dépense-Man",
   description: "Gérez vos finances mensuelles facilement",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Dépense Manager",
+    title: "Dépense-Man",
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
-    siteName: "Dépense Manager",
-    title: "Dépense Manager",
+    siteName: "Dépense-Man",
+    title: "Dépense-Man",
     description: "Gérez vos finances mensuelles facilement",
   },
   twitter: {
     card: "summary",
-    title: "Dépense Manager",
+    title: "Dépense-Man",
     description: "Gérez vos finances mensuelles facilement",
   },
   icons: {
