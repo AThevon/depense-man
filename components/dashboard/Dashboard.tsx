@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Plus, TrendingUp, TrendingDown, DollarSign, LogOut, CreditCard } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, DollarSign, LogOut, CreditCard, Calendar as CalendarIcon, List } from 'lucide-react';
 import { MonthlyItem, FormData, CreateMonthlyItemInput, getPayCyclePosition } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyItems } from '@/hooks/useMonthlyItems';
@@ -10,6 +10,8 @@ import Button from '@/components/ui/Button';
 import MonthlyItemCard from './MonthlyItemCard';
 import MonthlyItemForm from '@/components/forms/MonthlyItemForm';
 import TimeIndicator from './TimeIndicator';
+import Footer from '@/components/ui/Footer';
+import Calendar from '@/components/calendar/Calendar';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -19,6 +21,7 @@ const Dashboard = () => {
   const [formType, setFormType] = useState<'income' | 'expense'>('expense');
   const [editingItem, setEditingItem] = useState<MonthlyItem | undefined>();
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   const filteredItems = useMemo(() => {
     if (filter === 'all') return items;
@@ -216,88 +219,174 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        {/* Filter */}
-        <div className="flex space-x-2 mb-6">
-          <Button
-            variant={filter === 'all' ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => setFilter('all')}
-          >
-            Tout
-          </Button>
-          <Button
-            variant={filter === 'income' ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => setFilter('income')}
-          >
-            Revenus
-          </Button>
-          <Button
-            variant={filter === 'expense' ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => setFilter('expense')}
-          >
-            Dépenses
-          </Button>
+        {/* View Mode Toggle */}
+        <div className="mb-6">
+          {/* Desktop version */}
+          <div className="hidden md:flex items-center justify-between">
+            <div className="flex space-x-2">
+              <Button
+                variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                icon={List}
+              >
+                Liste
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+                icon={CalendarIcon}
+              >
+                Calendrier
+              </Button>
+            </div>
+            
+            {/* Filter (only for list view) */}
+            {viewMode === 'list' && (
+              <div className="flex space-x-2">
+                <Button
+                  variant={filter === 'all' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilter('all')}
+                >
+                  Tout
+                </Button>
+                <Button
+                  variant={filter === 'income' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilter('income')}
+                >
+                  Revenus
+                </Button>
+                <Button
+                  variant={filter === 'expense' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilter('expense')}
+                >
+                  Dépenses
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile version */}
+          <div className="md:hidden space-y-3">
+            {/* View Mode Toggle */}
+            <div className="flex space-x-2">
+              <Button
+                variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                icon={List}
+                className="flex-1"
+              >
+                Liste
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+                icon={CalendarIcon}
+                className="flex-1"
+              >
+                Calendrier
+              </Button>
+            </div>
+            
+            {/* Filter (only for list view on mobile) */}
+            {viewMode === 'list' && (
+              <div className="flex space-x-2">
+                <Button
+                  variant={filter === 'all' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilter('all')}
+                  className="flex-1"
+                >
+                  Tout
+                </Button>
+                <Button
+                  variant={filter === 'income' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilter('income')}
+                  className="flex-1"
+                >
+                  Revenus
+                </Button>
+                <Button
+                  variant={filter === 'expense' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilter('expense')}
+                  className="flex-1"
+                >
+                  Dépenses
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Items List */}
-        <div className="space-y-4">
-          {filteredItems.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <p className="text-secondary mb-4">
-                  {filter === 'all' ? 'Aucun élément trouvé' : 
-                   filter === 'income' ? 'Aucun revenu trouvé' : 'Aucune dépense trouvée'}
-                </p>
-                <Button
-                  variant="primary"
-                  icon={Plus}
-                  onClick={() => handleAddItem(filter === 'income' ? 'income' : 'expense')}
-                >
-                  {filter === 'income' ? 'Ajouter un revenu' : 'Ajouter une dépense'}
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            (() => {
-              const elements: React.ReactNode[] = [];
-              let timeIndicatorShown = false;
-              
-              filteredItems.forEach((item) => {
-                const itemPosition = getPayCyclePosition(item.dayOfMonth);
-                const currentPosition = calculation.currentPosition;
+        {/* Content */}
+        {viewMode === 'list' ? (
+          <div className="space-y-4">
+            {filteredItems.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <p className="text-secondary mb-4">
+                    {filter === 'all' ? 'Aucun élément trouvé' : 
+                     filter === 'income' ? 'Aucun revenu trouvé' : 'Aucune dépense trouvée'}
+                  </p>
+                  <Button
+                    variant="primary"
+                    icon={Plus}
+                    onClick={() => handleAddItem(filter === 'income' ? 'income' : 'expense')}
+                  >
+                    {filter === 'income' ? 'Ajouter un revenu' : 'Ajouter une dépense'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              (() => {
+                const elements: React.ReactNode[] = [];
+                let timeIndicatorShown = false;
                 
-                // Afficher l'indicateur si on passe la position actuelle
-                if (!timeIndicatorShown && itemPosition > currentPosition) {
+                filteredItems.forEach((item) => {
+                  const itemPosition = getPayCyclePosition(item.dayOfMonth);
+                  const currentPosition = calculation.currentPosition;
+                  
+                  // Afficher l'indicateur si on passe la position actuelle
+                  if (!timeIndicatorShown && itemPosition > currentPosition) {
+                    elements.push(
+                      <TimeIndicator key="time-indicator" />
+                    );
+                    timeIndicatorShown = true;
+                  }
+                  
+                  elements.push(
+                    <MonthlyItemCard
+                      key={item.id}
+                      item={item}
+                      onEdit={handleEditItem}
+                      onDelete={handleDeleteItem}
+                      loading={loading}
+                    />
+                  );
+                });
+                
+                // Si l'indicateur n'a pas été affiché (on est après tous les items), l'afficher à la fin
+                if (!timeIndicatorShown) {
                   elements.push(
                     <TimeIndicator key="time-indicator" />
                   );
-                  timeIndicatorShown = true;
                 }
                 
-                elements.push(
-                  <MonthlyItemCard
-                    key={item.id}
-                    item={item}
-                    onEdit={handleEditItem}
-                    onDelete={handleDeleteItem}
-                    loading={loading}
-                  />
-                );
-              });
-              
-              // Si l'indicateur n'a pas été affiché (on est après tous les items), l'afficher à la fin
-              if (!timeIndicatorShown) {
-                elements.push(
-                  <TimeIndicator key="time-indicator" />
-                );
-              }
-              
-              return elements;
-            })()
-          )}
-        </div>
+                return elements;
+              })()
+            )}
+          </div>
+        ) : (
+          <Calendar items={items} />
+        )}
 
         {/* Error Message */}
         {error && (
@@ -322,6 +411,7 @@ const Dashboard = () => {
           />
         )}
       </div>
+      <Footer />
     </div>
   );
 };
