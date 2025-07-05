@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import { LogIn, Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -13,7 +14,6 @@ const LoginForm = () => {
     email: '',
     password: '',
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,16 +45,24 @@ const LoginForm = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Card variant="elevated" className="shadow-2xl">
-          <CardHeader className="text-center pb-8">
-            <div className="mx-auto w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-4">
-              <LogIn className="h-8 w-8 text-primary" />
+          <CardHeader className="flex flex-col items-center text-center">
+            <div className="flex justify-center">
+              <Image
+                src="/web-app-manifest-192x192.png"
+                alt="Dépense-Man Logo"
+                width={80}
+                height={80}
+                className="object-contain"
+              />
             </div>
-            <h1 className="text-2xl font-bold text-text mb-2">
-              Dépense-Man!
-            </h1>
-            <p className="text-secondary">
-              Attention aux sous...
-            </p>
+            <div className="flex flex-col items-center">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                Dépense-Man!
+              </h1>
+              <p className="text-secondary text-lg">
+                Attention aux sous...
+              </p>
+            </div>
           </CardHeader>
 
           <CardContent>
@@ -70,33 +78,21 @@ const LoginForm = () => {
                 required
               />
 
-              <div className="relative">
-                <Input
-                  label="Mot de passe"
-                  type={showPassword ? 'text' : 'password'}
-                  icon={Lock}
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  placeholder="••••••••"
-                  disabled={loading}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-8 text-secondary hover:text-text transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
+              <Input
+                label="Mot de passe"
+                type="password"
+                icon={Lock}
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                placeholder="••••••••"
+                disabled={loading}
+                showPasswordToggle={true}
+                required
+              />
 
               {(formError || error) && (
                 <div className="p-3 bg-red-500 bg-opacity-10 border border-red-500 rounded-lg">
-                  <p className="text-red-400 text-sm">
+                  <p className="text-sm">
                     {formError || error}
                   </p>
                 </div>
@@ -114,19 +110,9 @@ const LoginForm = () => {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-xs text-secondary">
-                Accès restreint aux utilisateurs autorisés
-              </p>
-            </div>
           </CardContent>
         </Card>
 
-        <div className="mt-8 text-center">
-          <p className="text-sm text-secondary">
-            Gérez vos prélèvements mensuels et revenus en toute simplicité
-          </p>
-        </div>
       </div>
     </div>
   );

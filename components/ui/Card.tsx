@@ -14,8 +14,6 @@ interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
   action?: React.ReactNode;
 }
 
-interface CardContentProps extends HTMLAttributes<HTMLDivElement> {}
-
 interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
   divided?: boolean;
 }
@@ -101,12 +99,12 @@ const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(({
   );
 });
 
-const CardContent = forwardRef<HTMLDivElement, CardContentProps>(({
+const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(({
   className = '',
   children,
   ...props
 }, ref) => {
-  const classes = `mt-4 ${className}`;
+  const classes = `${className}`;
 
   return (
     <div ref={ref} className={classes} {...props}>

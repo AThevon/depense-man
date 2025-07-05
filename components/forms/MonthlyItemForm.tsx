@@ -22,8 +22,9 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
     dayOfMonth: '',
     icon: '',
     isCredit: false,
-    remainingPayments: '',
-    totalPayments: '',
+    totalCreditAmount: '',
+    creditStartDate: '',
+    creditDuration: '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -31,14 +32,30 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
   // Pré-remplir le formulaire si on édite un élément existant
   useEffect(() => {
     if (item) {
+      const expenseItem = item.type === 'expense' ? item : null;
+      
       setFormData({
         name: item.name,
         amount: item.amount.toString(),
         dayOfMonth: item.dayOfMonth.toString(),
         icon: item.icon,
-        isCredit: item.type === 'expense' ? item.isCredit : false,
-        remainingPayments: item.type === 'expense' && item.remainingPayments ? item.remainingPayments.toString() : '',
-        totalPayments: item.type === 'expense' && item.totalPayments ? item.totalPayments.toString() : '',
+        isCredit: expenseItem?.isCredit || false,
+        totalCreditAmount: expenseItem?.totalCreditAmount?.toString() || '',
+        creditStartDate: expenseItem?.creditStartDate ? 
+          new Date(expenseItem.creditStartDate).toISOString().split('T')[0] : '',
+        creditDuration: expenseItem?.creditDuration?.toString() || '',
+      });
+    } else {
+      // Réinitialiser le formulaire pour un nouvel élément
+      setFormData({
+        name: '',
+        amount: '',
+        dayOfMonth: '',
+        icon: '',
+        isCredit: false,
+        totalCreditAmount: '',
+        creditStartDate: '',
+        creditDuration: '',
       });
     }
   }, [item]);
@@ -50,10 +67,12 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
       newErrors.name = 'Le nom est requis';
     }
 
-    if (!formData.amount.trim()) {
-      newErrors.amount = 'Le montant est requis';
-    } else if (isNaN(Number(formData.amount)) || Number(formData.amount) <= 0) {
-      newErrors.amount = 'Le montant doit être un nombre positif';
+    if (!formData.isCredit) {
+      if (!formData.amount.trim()) {
+        newErrors.amount = 'Le montant est requis';
+      } else if (isNaN(Number(formData.amount)) || Number(formData.amount) <= 0) {
+        newErrors.amount = 'Le montant doit être un nombre positif';
+      }
     }
 
     if (!formData.dayOfMonth.trim()) {
@@ -70,24 +89,27 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
     }
 
     if (type === 'expense' && formData.isCredit) {
-      if (!formData.remainingPayments?.trim()) {
-        newErrors.remainingPayments = 'Le nombre de paiements restants est requis';
-      } else if (isNaN(Number(formData.remainingPayments)) || Number(formData.remainingPayments) <= 0) {
-        newErrors.remainingPayments = 'Le nombre de paiements doit être un nombre positif';
+      if (!formData.totalCreditAmount?.trim()) {
+        newErrors.totalCreditAmount = 'Le montant total du crédit est requis';
+      } else if (isNaN(Number(formData.totalCreditAmount)) || Number(formData.totalCreditAmount) <= 0) {
+        newErrors.totalCreditAmount = 'Le montant total doit être un nombre positif';
       }
 
-      if (!formData.totalPayments?.trim()) {
-        newErrors.totalPayments = 'Le nombre total de paiements est requis';
-      } else if (isNaN(Number(formData.totalPayments)) || Number(formData.totalPayments) <= 0) {
-        newErrors.totalPayments = 'Le nombre total de paiements doit être un nombre positif';
-      }
-
-      if (formData.remainingPayments && formData.totalPayments) {
-        const remaining = Number(formData.remainingPayments);
-        const total = Number(formData.totalPayments);
-        if (remaining > total) {
-          newErrors.remainingPayments = 'Le nombre de paiements restants ne peut pas être supérieur au total';
+      if (!formData.creditStartDate?.trim()) {
+        newErrors.creditStartDate = 'La date de début est requise';
+      } else {
+        const startDate = new Date(formData.creditStartDate);
+        if (isNaN(startDate.getTime())) {
+          newErrors.creditStartDate = 'Date invalide';
         }
+      }
+
+      if (!formData.creditDuration?.trim()) {
+        newErrors.creditDuration = 'La durée en mois est requise';
+      } else if (isNaN(Number(formData.creditDuration)) || Number(formData.creditDuration) <= 0) {
+        newErrors.creditDuration = 'La durée doit être un nombre positif';
+      } else if (Number(formData.creditDuration) > 60) {
+        newErrors.creditDuration = 'La durée ne peut pas dépasser 60 mois';
       }
     }
 
@@ -114,13 +136,31 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
   };
 
   const handleInputChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Calculer automatiquement le montant mensuel pour les crédits
+      if (newData.isCredit && (field === 'totalCreditAmount' || field === 'creditDuration')) {
+        const total = Number(newData.totalCreditAmount);
+        const duration = Number(newData.creditDuration);
+        if (total > 0 && duration > 0) {
+          newData.amount = (total / duration).toFixed(2);
+        }
+      }
+
+      // Réinitialiser le montant si on désactive le crédit
+      if (field === 'isCredit' && !value) {
+        newData.amount = '';
+      }
+
+      return newData;
+    });
     
     // Nettoyer l'erreur du champ modifié
-    if (errors[field]) {
+    if (field in errors && errors[field as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
         [field]: undefined,
@@ -134,7 +174,9 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
     : `Ajouter ${type === 'income' ? 'un revenu' : 'une dépense'}`;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 p-0 md:p-4"
+    >
       <div className="bg-surface rounded-none md:rounded-xl shadow-xl w-full max-w-lg h-full md:h-auto md:max-h-[95vh] overflow-y-auto">
         <div className="p-4 md:p-6 pt-8 md:pt-6">
           <div className="flex items-center justify-between mb-6">
@@ -162,7 +204,7 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
             />
 
             <Input
-              label="Montant (€)"
+              label={formData.isCredit ? "Montant mensuel (€)" : "Montant (€)"}
               type="number"
               step="0.01"
               min="0"
@@ -170,7 +212,8 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
               onChange={(e) => handleInputChange('amount', e.target.value)}
               error={errors.amount}
               placeholder="0.00"
-              disabled={loading}
+              disabled={loading || formData.isCredit}
+              helper={formData.isCredit ? "Calculé automatiquement à partir du montant total" : undefined}
             />
 
             <Input
@@ -212,28 +255,54 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
                 </div>
 
                 {formData.isCredit && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <Input
-                      label="Paiements restants"
+                      label="Montant total du crédit (€)"
                       type="number"
+                      step="0.01"
                       min="0"
-                      value={formData.remainingPayments}
-                      onChange={(e) => handleInputChange('remainingPayments', e.target.value)}
-                      error={errors.remainingPayments}
-                      placeholder="12"
+                      value={formData.totalCreditAmount}
+                      onChange={(e) => handleInputChange('totalCreditAmount', e.target.value)}
+                      error={errors.totalCreditAmount}
+                      placeholder="600.00"
+                      helper="Montant total à rembourser"
                       disabled={loading}
                     />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        label="Date de début"
+                        type="date"
+                        value={formData.creditStartDate}
+                        onChange={(e) => handleInputChange('creditStartDate', e.target.value)}
+                        error={errors.creditStartDate}
+                        disabled={loading}
+                      />
 
-                    <Input
-                      label="Total paiements"
-                      type="number"
-                      min="1"
-                      value={formData.totalPayments}
-                      onChange={(e) => handleInputChange('totalPayments', e.target.value)}
-                      error={errors.totalPayments}
-                      placeholder="24"
-                      disabled={loading}
-                    />
+                      <Input
+                        label="Durée (mois)"
+                        type="number"
+                        min="1"
+                        max="60"
+                        value={formData.creditDuration}
+                        onChange={(e) => handleInputChange('creditDuration', e.target.value)}
+                        error={errors.creditDuration}
+                        placeholder="4"
+                        helper="Nombre de mois"
+                        disabled={loading}
+                      />
+                    </div>
+                    
+                    {formData.totalCreditAmount && formData.creditDuration && (
+                      <div className="p-3 bg-surface-elevated rounded-lg">
+                        <p className="text-sm text-secondary">
+                          <span className="font-medium">Montant mensuel : </span>
+                          <span className="text-primary font-bold">
+                            {(Number(formData.totalCreditAmount) / Number(formData.creditDuration)).toFixed(2)}€
+                          </span>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

@@ -18,8 +18,9 @@ export interface MonthlyIncome extends BaseMonthlyItem {
 export interface MonthlyExpense extends BaseMonthlyItem {
   type: 'expense';
   isCredit: boolean;
-  remainingPayments?: number; // Only for credit payments
-  totalPayments?: number; // Total payments for credit
+  totalCreditAmount?: number;  // Montant total du crédit
+  creditStartDate?: Date;      // Date de début du crédit
+  creditDuration?: number;     // Durée en mois
 }
 
 export type MonthlyItem = MonthlyIncome | MonthlyExpense;
@@ -28,7 +29,14 @@ export interface MonthlyCalculation {
   totalIncome: number;
   totalExpenses: number;
   remaining: number;
+  remainingThisMonth: number;
   items: MonthlyItem[];
+  activeCredits: {
+    count: number;
+    totalRemaining: number;
+    totalMonthly: number;
+  };
+  currentPosition: number;
 }
 
 export interface User {
@@ -50,8 +58,9 @@ export interface FormData {
   dayOfMonth: string;
   icon: string;
   isCredit: boolean;
-  remainingPayments?: string;
-  totalPayments?: string;
+  totalCreditAmount?: string;
+  creditStartDate?: string;
+  creditDuration?: string;
 }
 
 export interface FormErrors {
@@ -59,8 +68,9 @@ export interface FormErrors {
   amount?: string;
   dayOfMonth?: string;
   icon?: string;
-  remainingPayments?: string;
-  totalPayments?: string;
+  totalCreditAmount?: string;
+  creditStartDate?: string;
+  creditDuration?: string;
 }
 
 export interface IconOption {
@@ -148,4 +158,88 @@ export interface UseAuthReturn {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+}
+
+// Credit calculation utilities
+export interface CreditInfo {
+  monthlyAmount: number;
+  totalAmount: number;
+  remainingAmount: number;
+  remainingPayments: number;
+  isActive: boolean;
+  progressPercentage: number;
+}
+
+export function calculateCreditInfo(expense: MonthlyExpense): CreditInfo | null {
+  if (!expense.isCredit || !expense.totalCreditAmount || !expense.creditDuration || !expense.creditStartDate) {
+    return null;
+  }
+
+  const monthlyAmount = expense.totalCreditAmount / expense.creditDuration;
+  const now = new Date();
+  const startDate = new Date(expense.creditStartDate);
+  
+  // Calculate payments made based on payment cycles
+  let paymentsMade = 0;
+  const paymentDay = expense.dayOfMonth;
+  
+  // Calculate how many payment cycles have been completed
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentDay = now.getDate();
+  
+  const startYear = startDate.getFullYear();
+  const startMonth = startDate.getMonth();
+  
+  // Count completed payment cycles
+  let year = startYear;
+  let month = startMonth;
+  
+  while (year < currentYear || (year === currentYear && month <= currentMonth)) {
+    // Check if this payment cycle has been completed
+    if (year < currentYear || (year === currentYear && month < currentMonth) || 
+        (year === currentYear && month === currentMonth && currentDay >= paymentDay)) {
+      paymentsMade++;
+    }
+    
+    // Move to next month
+    month++;
+    if (month > 11) {
+      month = 0;
+      year++;
+    }
+    
+    // Don't count more payments than the duration
+    if (paymentsMade >= expense.creditDuration) {
+      break;
+    }
+  }
+  
+  const remainingPayments = Math.max(0, expense.creditDuration - paymentsMade);
+  const remainingAmount = monthlyAmount * remainingPayments;
+  const isActive = remainingPayments > 0;
+  const progressPercentage = (paymentsMade / expense.creditDuration) * 100;
+
+  return {
+    monthlyAmount,
+    totalAmount: expense.totalCreditAmount,
+    remainingAmount,
+    remainingPayments,
+    isActive,
+    progressPercentage
+  };
+}
+
+// Utility functions for pay cycle calculations
+export function getPayCyclePosition(dayOfMonth: number, payDay: number = 29): number {
+  if (dayOfMonth >= payDay) {
+    return dayOfMonth - payDay; // Jours après la paye
+  } else {
+    return (31 - payDay) + dayOfMonth; // Jours du mois suivant
+  }
+}
+
+export function getCurrentPayCyclePosition(payDay: number = 29): number {
+  const today = new Date();
+  return getPayCyclePosition(today.getDate(), payDay);
 } 

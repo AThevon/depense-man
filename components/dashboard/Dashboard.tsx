@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Plus, TrendingUp, TrendingDown, DollarSign, LogOut } from 'lucide-react';
-import { MonthlyItem, FormData, CreateMonthlyItemInput } from '@/lib/types';
+import { Plus, TrendingUp, TrendingDown, DollarSign, LogOut, CreditCard } from 'lucide-react';
+import { MonthlyItem, FormData, CreateMonthlyItemInput, getPayCyclePosition } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyItems } from '@/hooks/useMonthlyItems';
 import Card, { CardHeader, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import MonthlyItemCard from './MonthlyItemCard';
 import MonthlyItemForm from '@/components/forms/MonthlyItemForm';
+import TimeIndicator from './TimeIndicator';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -47,8 +48,9 @@ const Dashboard = () => {
       ...(formType === 'expense' && {
         isCredit: formData.isCredit,
         ...(formData.isCredit && {
-          remainingPayments: Number(formData.remainingPayments),
-          totalPayments: Number(formData.totalPayments),
+          totalCreditAmount: Number(formData.totalCreditAmount),
+          creditStartDate: new Date(formData.creditStartDate!),
+          creditDuration: Number(formData.creditDuration),
         }),
       }),
     };
@@ -126,7 +128,7 @@ const Dashboard = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card variant="elevated">
             <CardHeader
               icon={TrendingUp}
@@ -150,9 +152,12 @@ const Dashboard = () => {
               <div className="text-2xl font-bold text-red-400">
                 {formatAmount(calculation.totalExpenses)}
               </div>
+              <div className="text-sm text-secondary mt-1">
+                {formatAmount(calculation.remainingThisMonth)} restant ce mois
+              </div>
             </CardContent>
           </Card>
-
+          
           <Card variant="elevated">
             <CardHeader
               icon={DollarSign}
@@ -165,6 +170,26 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          <Card variant="elevated">
+            <CardHeader
+              icon={CreditCard}
+              title="Crédits"
+              subtitle="En cours"
+            />
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-400">
+                {calculation.activeCredits.count}
+              </div>
+              <div className="text-sm text-secondary mt-1">
+                {formatAmount(calculation.activeCredits.totalMonthly)}/mois
+              </div>
+              <div className="text-xs text-secondary mt-1">
+                {formatAmount(calculation.activeCredits.totalRemaining)} restant
+              </div>
+            </CardContent>
+          </Card>
+
         </div>
 
         {/* Action Buttons */}
@@ -235,15 +260,42 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           ) : (
-            filteredItems.map((item) => (
-              <MonthlyItemCard
-                key={item.id}
-                item={item}
-                onEdit={handleEditItem}
-                onDelete={handleDeleteItem}
-                loading={loading}
-              />
-            ))
+            (() => {
+              const elements: React.ReactNode[] = [];
+              let timeIndicatorShown = false;
+              
+              filteredItems.forEach((item) => {
+                const itemPosition = getPayCyclePosition(item.dayOfMonth);
+                const currentPosition = calculation.currentPosition;
+                
+                // Afficher l'indicateur si on passe la position actuelle
+                if (!timeIndicatorShown && itemPosition > currentPosition) {
+                  elements.push(
+                    <TimeIndicator key="time-indicator" />
+                  );
+                  timeIndicatorShown = true;
+                }
+                
+                elements.push(
+                  <MonthlyItemCard
+                    key={item.id}
+                    item={item}
+                    onEdit={handleEditItem}
+                    onDelete={handleDeleteItem}
+                    loading={loading}
+                  />
+                );
+              });
+              
+              // Si l'indicateur n'a pas été affiché (on est après tous les items), l'afficher à la fin
+              if (!timeIndicatorShown) {
+                elements.push(
+                  <TimeIndicator key="time-indicator" />
+                );
+              }
+              
+              return elements;
+            })()
           )}
         </div>
 

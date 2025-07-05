@@ -20,7 +20,10 @@ import {
   UpdateMonthlyItemInput, 
   UseMonthlyItemsReturn,
   MonthlyExpense,
-  MonthlyIncome 
+  MonthlyIncome,
+  calculateCreditInfo,
+  getPayCyclePosition,
+  getCurrentPayCyclePosition
 } from '@/lib/types';
 
 const COLLECTION_NAME = 'monthly_items';
@@ -62,8 +65,9 @@ export function useMonthlyItems(userId: string | undefined): UseMonthlyItemsRetu
             updatedAt: data.updatedAt?.toDate() || new Date(),
             ...(data.type === 'expense' && {
               isCredit: data.isCredit || false,
-              remainingPayments: data.remainingPayments,
-              totalPayments: data.totalPayments,
+              totalCreditAmount: data.totalCreditAmount,
+              creditStartDate: data.creditStartDate?.toDate(),
+              creditDuration: data.creditDuration,
             }),
           };
           itemsData.push(item);
@@ -86,15 +90,6 @@ export function useMonthlyItems(userId: string | undefined): UseMonthlyItemsRetu
   // Tri intelligent par cycle de paye (commence au jour de paye)
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
-      // Fonction pour calculer la position dans le cycle (jour de paye = 0)
-      const getPayCyclePosition = (dayOfMonth: number, payDay: number = 29) => {
-        if (dayOfMonth >= payDay) {
-          return dayOfMonth - payDay; // Jours après la paye
-        } else {
-          return (31 - payDay) + dayOfMonth; // Jours du mois suivant
-        }
-      };
-
       const positionA = getPayCyclePosition(a.dayOfMonth);
       const positionB = getPayCyclePosition(b.dayOfMonth);
 
@@ -110,15 +105,62 @@ export function useMonthlyItems(userId: string | undefined): UseMonthlyItemsRetu
 
     const totalExpenses = sortedItems
       .filter((item): item is MonthlyExpense => item.type === 'expense')
-      .reduce((sum, item) => sum + item.amount, 0);
+      .reduce((sum, item) => {
+        if (item.isCredit) {
+          const creditInfo = calculateCreditInfo(item);
+          if (creditInfo && creditInfo.isActive) {
+            return sum + creditInfo.monthlyAmount;
+          }
+          return sum; // Credit inactif, pas de prélèvement
+        }
+        return sum + item.amount;
+      }, 0);
 
     const remaining = totalIncome - totalExpenses;
+
+    // Position actuelle dans le cycle de paye
+    const currentPosition = getCurrentPayCyclePosition();
+
+    // Calcul des dépenses restantes ce mois-ci (après la date actuelle)
+    const remainingThisMonth = sortedItems
+      .filter((item): item is MonthlyExpense => item.type === 'expense')
+      .filter(item => getPayCyclePosition(item.dayOfMonth) > currentPosition)
+      .reduce((sum, item) => {
+        if (item.isCredit) {
+          const creditInfo = calculateCreditInfo(item);
+          if (creditInfo && creditInfo.isActive) {
+            return sum + creditInfo.monthlyAmount;
+          }
+          return sum;
+        }
+        return sum + item.amount;
+      }, 0);
+
+    // Calcul des crédits actifs
+    const activeCredits = sortedItems
+      .filter(item => item.type === 'expense')
+      .map(item => item as MonthlyExpense)
+      .filter(item => item.isCredit === true)
+      .reduce((acc, item) => {
+        const creditInfo = calculateCreditInfo(item);
+        if (creditInfo && creditInfo.isActive) {
+          return {
+            count: acc.count + 1,
+            totalRemaining: acc.totalRemaining + creditInfo.remainingAmount,
+            totalMonthly: acc.totalMonthly + creditInfo.monthlyAmount,
+          };
+        }
+        return acc;
+      }, { count: 0, totalRemaining: 0, totalMonthly: 0 });
 
     return {
       totalIncome,
       totalExpenses,
       remaining,
+      remainingThisMonth,
       items: sortedItems,
+      activeCredits,
+      currentPosition,
     };
   }, [sortedItems]);
 
