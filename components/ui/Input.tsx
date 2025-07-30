@@ -31,22 +31,22 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
 
   const inputType = showPasswordToggle ? (showPassword ? 'text' : 'password') : type;
 
-  const baseClasses = 'w-full rounded-lg border transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'w-full rounded-xl border transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed text-base focus:ring-2 focus:ring-primary/20';
   
   const variants = {
-    default: 'bg-surface border-default text-text placeholder-text-muted',
+    default: 'bg-surface border-default/50 text-text placeholder-text-muted hover:border-default',
     filled: 'bg-surface-elevated border-transparent text-text placeholder-text-muted',
-    outlined: 'bg-background border-2 border-primary/20 text-text placeholder-text-muted',
+    outlined: 'bg-background border border-primary/30 text-text placeholder-text-muted',
   };
 
-  const errorClasses = error ? 'border-red-500' : '';
+  const errorClasses = error ? 'border-error focus:border-error focus:ring-error/20' : '';
   const focusClasses = isFocused && !error ? 'border-primary' : '';
 
   const paddingClasses = Icon 
     ? iconPosition === 'left' 
-      ? 'pl-11 pr-4 py-3' 
-      : 'pl-4 pr-11 py-3'
-    : 'px-4 py-3';
+      ? showPasswordToggle ? 'pl-12 pr-12 py-4' : 'pl-12 pr-4 py-4'
+      : showPasswordToggle ? 'pl-4 pr-12 py-4' : 'pl-4 pr-12 py-4'
+    : showPasswordToggle ? 'px-4 pr-12 py-4' : 'px-4 py-4';
 
   const inputClasses = [
     baseClasses,
@@ -62,14 +62,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
   return (
     <div className={containerClasses}>
       {label && (
-        <label className="block text-sm font-medium text-text mb-2">
+        <label className="block text-sm font-semibold text-text mb-3">
           {label}
         </label>
       )}
       
       <div className="relative">
         {Icon && (
-          <div className={`absolute inset-y-0 ${iconPosition === 'left' ? 'left-0' : 'right-0'} pl-3 flex items-center pointer-events-none`}>
+          <div className={`absolute inset-y-0 ${iconPosition === 'left' ? 'left-0 pl-4' : 'right-0 pr-4'} flex items-center pointer-events-none`}>
             <Icon className="h-5 w-5 text-secondary" />
           </div>
         )}
@@ -87,26 +87,26 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
         {showPasswordToggle && (
           <button
             type="button"
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-primary/5 rounded-lg transition-colors"
             onClick={() => setShowPassword(!showPassword)}
           >
             {showPassword ? (
-              <EyeOff className="h-5 w-5 text-secondary hover:text-text" />
+              <EyeOff className="h-5 w-5 text-secondary hover:text-primary transition-colors" />
             ) : (
-              <Eye className="h-5 w-5 text-secondary hover:text-text" />
+              <Eye className="h-5 w-5 text-secondary hover:text-primary transition-colors" />
             )}
           </button>
         )}
       </div>
       
       {error && (
-        <p className="mt-1 text-sm text-red-500">
+        <p className="mt-2 text-sm text-error font-medium">
           {error}
         </p>
       )}
       
       {helper && !error && (
-        <p className="mt-1 text-sm text-secondary">
+        <p className="mt-2 text-sm text-secondary">
           {helper}
         </p>
       )}

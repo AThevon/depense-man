@@ -22,20 +22,20 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   className = '',
   ...props
 }, ref) => {
-  const baseClasses = 'inline-flex items-center justify-center rounded-lg font-medium transition-colors outline-none disabled:opacity-50 disabled:pointer-events-none';
+  const baseClasses = 'inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200 outline-none disabled:opacity-50 disabled:pointer-events-none transform active:scale-95';
   
   const variants = {
-    primary: 'bg-primary text-white hover:bg-primary-dark',
-    secondary: 'bg-surface-elevated text-text hover:bg-surface border border-default',
-    outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-white',
-    ghost: 'text-primary hover:bg-primary/10',
-    danger: 'bg-red-600 text-white hover:bg-red-700',
+    primary: 'bg-primary text-white hover:bg-primary-dark shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30',
+    secondary: 'bg-surface-elevated text-text hover:bg-surface border border-default/50 hover:border-default',
+    outline: 'border border-primary/50 text-primary hover:bg-primary hover:text-white hover:border-primary',
+    ghost: 'text-primary hover:bg-primary/10 hover:text-primary-dark',
+    danger: 'bg-error text-white hover:bg-error/90 shadow-lg shadow-error/25',
   };
 
   const sizes = {
-    sm: 'h-8 px-3 text-sm',
-    md: 'h-10 px-4 text-base',
-    lg: 'h-12 px-6 text-lg',
+    sm: 'h-9 px-4 text-sm',
+    md: 'h-11 px-6 text-base',
+    lg: 'h-14 px-8 text-lg',
   };
 
   const iconSizes = {

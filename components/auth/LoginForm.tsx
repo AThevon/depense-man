@@ -42,57 +42,61 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card variant="elevated" className="shadow-2xl">
-          <CardHeader className="flex flex-col items-center text-center">
-            <div className="flex justify-center">
-              <Image
-                src="/web-app-manifest-192x192.png"
-                alt="Dépense-Man Logo"
-                width={80}
-                height={80}
-                className="object-contain"
-              />
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="w-full max-w-lg">
+        <Card variant="elevated" className="glass shadow-2xl">
+          <CardHeader className="flex flex-col items-center text-center py-8">
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-xl">
+                <Image
+                  src="/web-app-manifest-192x192.png"
+                  alt="Dépense-Man Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+              </div>
             </div>
-            <div className="flex flex-col items-center">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                Dépense-Man!
+            <div className="flex flex-col items-center space-y-2">
+              <h1 className="text-4xl font-bold gradient-text">
+                Dépense-Man
               </h1>
               <p className="text-secondary text-lg">
-                Attention aux sous...
+                Gérez vos finances en toute simplicité
               </p>
             </div>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="px-8 pb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <Input
-                label="Email"
-                type="email"
-                icon={Mail}
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="votre@email.com"
-                disabled={loading}
-                required
-              />
+              <div className="space-y-5">
+                <Input
+                  label="Email"
+                  type="email"
+                  icon={Mail}
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="votre@email.com"
+                  disabled={loading}
+                  required
+                />
 
-              <Input
-                label="Mot de passe"
-                type="password"
-                icon={Lock}
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                placeholder="••••••••"
-                disabled={loading}
-                showPasswordToggle={true}
-                required
-              />
+                <Input
+                  label="Mot de passe"
+                  type="password"
+                  icon={Lock}
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  placeholder="••••••••"
+                  disabled={loading}
+                  showPasswordToggle={true}
+                  required
+                />
+              </div>
 
               {(formError || error) && (
-                <div className="p-3 bg-red-500 bg-opacity-10 border border-red-500 rounded-lg">
-                  <p className="text-sm">
+                <div className="p-4 bg-error/10 border border-error/30 rounded-xl">
+                  <p className="text-sm text-error font-medium">
                     {formError || error}
                   </p>
                 </div>
@@ -105,11 +109,12 @@ const LoginForm = () => {
                 loading={loading}
                 disabled={loading}
                 icon={LogIn}
+                size="lg"
+                className="mt-8"
               >
                 Se connecter
               </Button>
             </form>
-
           </CardContent>
         </Card>
 

@@ -113,122 +113,120 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-text">Dépense-Man!</h1>
-            <p className="text-secondary mt-1">Attention aux sous...</p>
+        <header className="flex items-center justify-between mb-8 sm:mb-12">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-4xl font-bold gradient-text">Dépense-Man</h1>
+            <p className="hidden sm:block text-secondary text-lg">Gérez vos finances en toute simplicité</p>
           </div>
           <Button
             variant="ghost"
             icon={LogOut}
             onClick={handleSignOut}
-            className="text-secondary hover:text-primary"
+            className="text-secondary hover:text-primary !px-2 sm:!px-4 py-2"
           >
-            Déconnexion
+            <span className="hidden sm:inline">Déconnexion</span>
           </Button>
-        </div>
+        </header>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card variant="elevated">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8 sm:mb-12">
+          <Card variant="elevated" className="glass">
             <CardHeader
               icon={TrendingUp}
               title="Revenus"
               subtitle="Total mensuel"
             />
-            <CardContent>
-              <div className="text-2xl font-bold text-green-400">
+            <CardContent className="pt-2 md:pt-4">
+              <div className="text-lg md:text-3xl font-bold text-success">
                 {formatAmount(calculation.totalIncome)}
               </div>
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card variant="elevated" className="glass">
             <CardHeader
               icon={TrendingDown}
               title="Dépenses"
               subtitle="Total mensuel"
             />
-            <CardContent>
-              <div className="text-2xl font-bold text-red-400">
+            <CardContent className="pt-2 md:pt-4">
+              <div className="text-lg md:text-3xl font-bold text-error">
                 {formatAmount(calculation.totalExpenses)}
               </div>
-              <div className="text-sm text-secondary mt-1">
+              <div className="text-xs md:text-sm text-secondary mt-1 md:mt-2 hidden md:block">
                 {formatAmount(calculation.remainingThisMonth)} restant ce mois
               </div>
             </CardContent>
           </Card>
           
-          <Card variant="elevated">
+          <Card variant="elevated" className="glass">
             <CardHeader
               icon={DollarSign}
-              title="Restant"
+              title="Solde"
               subtitle="Après dépenses"
             />
-            <CardContent>
-              <div className={`text-2xl font-bold ${getRemainingColor(calculation.remaining)}`}>
+            <CardContent className="pt-2 md:pt-4">
+              <div className={`text-lg md:text-3xl font-bold ${getRemainingColor(calculation.remaining)}`}>
                 {formatAmount(calculation.remaining)}
               </div>
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card variant="elevated" className="glass">
             <CardHeader
               icon={CreditCard}
               title="Crédits"
               subtitle="En cours"
             />
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-400">
+            <CardContent className="pt-2 md:pt-4">
+              <div className="text-lg md:text-3xl font-bold text-accent">
                 {calculation.activeCredits.count}
               </div>
-              <div className="text-sm text-secondary mt-1">
+              <div className="text-xs md:text-sm text-secondary mt-1 md:mt-2">
                 {formatAmount(calculation.activeCredits.totalMonthly)}/mois
               </div>
-              <div className="text-xs text-secondary mt-1">
+              <div className="text-xs text-secondary mt-1 hidden md:block">
                 {formatAmount(calculation.activeCredits.totalRemaining)} restant
               </div>
             </CardContent>
           </Card>
-
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-10">
           <Button
             variant="primary"
             icon={Plus}
             onClick={() => handleAddItem('expense')}
             size="lg"
-            className="w-full justify-center py-3 px-4"
+            className="flex-1 justify-center py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold"
           >
-            <span className="hidden sm:inline">Ajouter une dépense</span>
-            <span className="sm:hidden">Dépense</span>
+            Nouvelle dépense
           </Button>
           <Button
-          variant="outline"
+            variant="outline"
             icon={Plus}
             onClick={() => handleAddItem('income')}
             size="lg"
-            className="w-full justify-center py-3 px-4"
+            className="flex-1 justify-center py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold"
           >
-            <span className="hidden sm:inline">Ajouter un revenu</span>
-            <span className="sm:hidden">Revenu</span>
+            Nouveau revenu
           </Button>
         </div>
 
-        {/* View Mode Toggle */}
-        <div className="mb-6">
-          {/* Desktop version */}
-          <div className="hidden md:flex items-center justify-between">
-            <div className="flex space-x-2">
+        {/* View Mode & Filters */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* View Mode Toggle */}
+            <div className="flex bg-surface border border-default rounded-lg p-1">
               <Button
                 variant={viewMode === 'list' ? 'primary' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
                 icon={List}
+                className="flex-1 sm:flex-none rounded-md"
               >
                 Liste
               </Button>
@@ -237,6 +235,7 @@ const Dashboard = () => {
                 size="sm"
                 onClick={() => setViewMode('calendar')}
                 icon={CalendarIcon}
+                className="flex-1 sm:flex-none rounded-md"
               >
                 Calendrier
               </Button>
@@ -244,11 +243,12 @@ const Dashboard = () => {
             
             {/* Filter (only for list view) */}
             {viewMode === 'list' && (
-              <div className="flex space-x-2">
+              <div className="flex bg-surface border border-default rounded-lg p-1">
                 <Button
                   variant={filter === 'all' ? 'primary' : 'ghost'}
                   size="sm"
                   onClick={() => setFilter('all')}
+                  className="flex-1 sm:flex-none rounded-md"
                 >
                   Tout
                 </Button>
@@ -256,6 +256,7 @@ const Dashboard = () => {
                   variant={filter === 'income' ? 'primary' : 'ghost'}
                   size="sm"
                   onClick={() => setFilter('income')}
+                  className="flex-1 sm:flex-none rounded-md"
                 >
                   Revenus
                 </Button>
@@ -263,61 +264,7 @@ const Dashboard = () => {
                   variant={filter === 'expense' ? 'primary' : 'ghost'}
                   size="sm"
                   onClick={() => setFilter('expense')}
-                >
-                  Dépenses
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile version */}
-          <div className="md:hidden space-y-3">
-            {/* View Mode Toggle */}
-            <div className="flex space-x-2">
-              <Button
-                variant={viewMode === 'list' ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                icon={List}
-                className="flex-1"
-              >
-                Liste
-              </Button>
-              <Button
-                variant={viewMode === 'calendar' ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('calendar')}
-                icon={CalendarIcon}
-                className="flex-1"
-              >
-                Calendrier
-              </Button>
-            </div>
-            
-            {/* Filter (only for list view on mobile) */}
-            {viewMode === 'list' && (
-              <div className="flex space-x-2">
-                <Button
-                  variant={filter === 'all' ? 'primary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setFilter('all')}
-                  className="flex-1"
-                >
-                  Tout
-                </Button>
-                <Button
-                  variant={filter === 'income' ? 'primary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setFilter('income')}
-                  className="flex-1"
-                >
-                  Revenus
-                </Button>
-                <Button
-                  variant={filter === 'expense' ? 'primary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setFilter('expense')}
-                  className="flex-1"
+                  className="flex-1 sm:flex-none rounded-md"
                 >
                   Dépenses
                 </Button>

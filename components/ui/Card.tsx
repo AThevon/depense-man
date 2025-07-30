@@ -26,21 +26,21 @@ const Card = forwardRef<HTMLDivElement, CardProps>(({
   children,
   ...props
 }, ref) => {
-  const baseClasses = 'rounded-xl transition-all duration-200';
+  const baseClasses = 'rounded-2xl transition-all duration-300';
   
   const variants = {
-    default: 'bg-surface border border-default',
-    elevated: 'bg-surface-elevated border border-light shadow-lg',
-    outlined: 'bg-background border-2 border-primary border-opacity-20',
+    default: 'bg-surface border border-default/50',
+    elevated: 'bg-surface-elevated border border-light/30 shadow-2xl shadow-black/20',
+    outlined: 'bg-background border border-primary/30',
   };
 
   const paddings = {
-    sm: 'p-3',
-    md: 'p-4',
-    lg: 'p-6',
+    sm: 'p-3 sm:p-4',
+    md: 'p-4 sm:p-6',
+    lg: 'p-6 sm:p-8',
   };
 
-  const hoverClasses = hover ? 'hover:shadow-lg hover:scale-[1.02] cursor-pointer' : '';
+  const hoverClasses = hover ? 'hover:shadow-2xl hover:shadow-black/25 hover:scale-[1.02] hover:border-primary/50 cursor-pointer' : '';
 
   const classes = [
     baseClasses,
@@ -72,18 +72,18 @@ const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(({
     <div ref={ref} className={classes} {...props}>
       <div className="flex items-center space-x-3">
                 {Icon && (
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Icon className="h-5 w-5 text-primary" />
+          <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+            <Icon className="h-4 w-4 md:h-5 md:w-5 text-primary" />
           </div>
         )}
-        <div>
+        <div className="min-w-0 flex-1">
           {title && (
-            <h3 className="text-lg font-semibold text-text">
+            <h3 className="text-sm md:text-lg font-semibold text-text truncate">
               {title}
             </h3>
           )}
           {subtitle && (
-            <p className="text-sm text-secondary">
+            <p className="text-xs md:text-sm text-secondary truncate">
               {subtitle}
             </p>
           )}
