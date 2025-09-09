@@ -2,8 +2,8 @@ import { useState, useRef } from 'react';
 import { Edit3, Trash2, Calendar, CreditCard } from 'lucide-react';
 import { MonthlyItem, MonthlyExpense, calculateCreditInfo } from '@/lib/types';
 import { ALL_ICONS } from '@/components/ui/IconModal';
-import Card, { CardContent } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface MonthlyItemCardProps {
   item: MonthlyItem;
@@ -22,6 +22,7 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
   const IconComponent = ALL_ICONS.find(icon => icon.name === item.icon)?.icon;
   const isExpense = item.type === 'expense';
   const expenseItem = isExpense ? item as MonthlyExpense : null;
+  const isCredit = expenseItem?.isCredit || false;
 
   const handleDelete = () => {
     onDelete(item.id);
@@ -70,10 +71,14 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
 
   return (
     <div className="relative overflow-hidden">
-      <Card className="relative group hover:scale-[1.01] transition-all duration-200" hover>
+      <Card className={`relative group p-0 ${isCredit ? 'bg-gradient-to-r from-card via-muted/30 to-card' : ''}`} 
+            style={isCredit ? {
+              backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 8px, oklch(from var(--muted) l c h / 0.3) 8px, oklch(from var(--muted) l c h / 0.3) 12px)',
+              backgroundSize: '24px 24px'
+            } : {}}>
         {/* Boutons d'actions cachés (révélés par swipe sur mobile) */}
         <div 
-          className="absolute right-0 top-0 h-full flex items-center space-x-2 bg-surface px-4 sm:hidden transition-opacity duration-200"
+          className="absolute right-0 top-0 h-full flex items-center space-x-2 bg-card px-4 sm:hidden transition-opacity duration-200"
           style={{
             opacity: currentX > 30 ? 1 : 0
           }}
@@ -81,30 +86,32 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
           <Button
             variant="ghost"
             size="sm"
-            icon={Edit3}
             onClick={() => {
               onEdit(item);
               resetSwipe();
             }}
             disabled={loading}
-            className="text-primary hover:text-primary-dark bg-primary/10 hover:bg-primary/20"
-          />
+            className="h-8 w-8 p-0"
+          >
+            <Edit3 className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"
-            icon={Trash2}
             onClick={() => {
               setShowDeleteConfirm(true);
               resetSwipe();
             }}
             disabled={loading}
-            className="text-error hover:text-error/80 bg-error/10 hover:bg-error/20"
-          />
+            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
 
         <CardContent 
           ref={cardRef}
-          className="p-4 sm:p-6 relative z-10 transition-transform duration-200 ease-out cursor-pointer select-none sm:cursor-auto"
+          className="p-4 relative z-10 cursor-pointer select-none sm:cursor-auto"
           style={{
             transform: `translateX(-${currentX}px)`
           }}
@@ -113,30 +120,30 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
           onTouchEnd={handleTouchEnd}
           onClick={resetSwipe}
         >
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center justify-between gap-3">
           <div className="flex items-center space-x-3 flex-1 min-w-0">
-            <div className={`p-2 sm:p-3 rounded-xl flex-shrink-0 ${isExpense ? 'bg-error/10 border border-error/20' : 'bg-success/10 border border-success/20'}`}>
+            <div className="p-2 sm:p-3 rounded-lg flex-shrink-0 bg-secondary/50">
               {IconComponent && (
-                <IconComponent className={`h-5 w-5 sm:h-6 sm:w-6 ${isExpense ? 'text-error' : 'text-success'}`} />
+                <IconComponent className={`h-5 w-5 sm:h-6 sm:w-6 ${isExpense ? 'text-destructive' : 'text-success'}`} />
               )}
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-text truncate text-sm sm:text-base">
+              <p className="font-semibold text-foreground truncate !text-lg sm:text-base">
                 {item.name}
-              </h3>
+              </p>
 
               <div className="flex items-center space-x-2 mt-1">
-                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-secondary flex-shrink-0" />
-                <span className="text-xs sm:text-sm text-secondary">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   Le {item.dayOfMonth}
                 </span>
               </div>
 
               {creditInfo && creditInfo.isActive && (
                 <div className="flex items-center space-x-2 mt-1">
-                  <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 text-secondary flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-secondary truncate">
+                  <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="text-xs sm:text-sm text-muted-foreground truncate">
                     {creditInfo.remainingPayments} paiements restants
                   </span>
                 </div>
@@ -150,21 +157,23 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
               <Button
                 variant="ghost"
                 size="sm"
-                icon={Edit3}
                 onClick={() => onEdit(item)}
                 disabled={loading}
-                className="text-secondary hover:text-primary"
-              />
+                className="h-8 w-8 p-0"
+              >
+                <Edit3 className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                icon={Trash2}
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={loading}
-                className="text-secondary hover:text-red-400"
-              />
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
-            <span className={`text-lg sm:text-xl font-bold ${isExpense ? 'text-error' : 'text-success'} whitespace-nowrap`}>
+            <span className={`text-lg sm:text-xl font-bold ${isExpense ? 'text-destructive' : 'text-success'} whitespace-nowrap`}>
               {isExpense ? '-' : '+'}
               {creditInfo && creditInfo.isActive ?
                 formatAmount(creditInfo.monthlyAmount) :
@@ -174,31 +183,31 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
           </div>
         </div>
 
-        {creditInfo && creditInfo.isActive && (
-          <div className="mt-4 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-secondary font-medium">Progression</span>
-              <span className="text-primary font-semibold">{Math.round(creditInfo.progressPercentage)}%</span>
+          {creditInfo && (
+            <div className="mt-4 space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground font-medium">Progression</span>
+                <span className="text-primary font-semibold">{Math.round(creditInfo.progressPercentage)}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2.5">
+                <div
+                  className="bg-primary h-full rounded-full transition-all duration-300"
+                  style={{ width: `${creditInfo.progressPercentage}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Restant: <span className="font-medium text-foreground">{formatAmount(creditInfo.remainingAmount)}</span></span>
+                <span>Total: <span className="font-medium text-foreground">{formatAmount(creditInfo.totalAmount)}</span></span>
+              </div>
             </div>
-            <div className="w-full bg-surface-elevated rounded-full h-2.5 border border-border/30">
-              <div
-                className="bg-gradient-to-r from-primary to-accent h-full rounded-full transition-all duration-500 shadow-sm"
-                style={{ width: `${creditInfo.progressPercentage}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-sm text-secondary">
-              <span>Restant: <span className="font-medium">{formatAmount(creditInfo.remainingAmount)}</span></span>
-              <span>Total: <span className="font-medium">{formatAmount(creditInfo.totalAmount)}</span></span>
-            </div>
-          </div>
-        )}
+          )}
         </CardContent>
       </Card>
 
       {showDeleteConfirm && (
-        <div className="absolute inset-0 bg-surface-elevated rounded-xl flex items-center justify-center p-4">
-          <div className="text-center space-y-4">
-            <p className="text-sm text-text">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-lg p-6 text-center space-y-4 shadow-xl border border-border">
+            <p className="text-sm text-foreground">
               Supprimer &quot;{item.name}&quot; ?
             </p>
             <div className="flex space-x-2">
@@ -211,10 +220,9 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
                 Annuler
               </Button>
               <Button
-                variant="danger"
+                variant="destructive"
                 size="sm"
                 onClick={handleDelete}
-                loading={loading}
                 disabled={loading}
               >
                 Supprimer

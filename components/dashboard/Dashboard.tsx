@@ -5,8 +5,8 @@ import { Plus, TrendingUp, TrendingDown, DollarSign, LogOut, CreditCard, Calenda
 import { MonthlyItem, FormData, CreateMonthlyItemInput, getPayCyclePosition } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyItems } from '@/hooks/useMonthlyItems';
-import Card, { CardHeader, CardContent } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import MonthlyItemCard from './MonthlyItemCard';
 import MonthlyItemForm from '@/components/forms/MonthlyItemForm';
 import TimeIndicator from './TimeIndicator';
@@ -16,7 +16,7 @@ import Calendar from '@/components/calendar/Calendar';
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { items, loading, error, addItem, updateItem, deleteItem, calculation } = useMonthlyItems(user?.uid);
-  
+
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState<'income' | 'expense'>('expense');
   const [editingItem, setEditingItem] = useState<MonthlyItem | undefined>();
@@ -95,8 +95,8 @@ const Dashboard = () => {
   };
 
   const getRemainingColor = (remaining: number) => {
-    if (remaining > 0) return 'text-green-400';
-    if (remaining < 0) return 'text-red-400';
+    if (remaining > 0) return 'text-success';
+    if (remaining < 0) return 'text-destructive';
     return 'text-primary';
   };
 
@@ -105,7 +105,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-secondary">Chargement...</p>
+          <p className="text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -115,79 +115,92 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
         {/* Header */}
-        <header className="flex items-center justify-between mb-8 sm:mb-12">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-4xl font-bold gradient-text">Dépense-Man</h1>
-            <p className="hidden sm:block text-secondary text-lg">Gérez vos finances en toute simplicité</p>
-          </div>
+        <header className="flex items-center justify-between mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground">Dépense-Man</h1>
           <Button
             variant="ghost"
-            icon={LogOut}
             onClick={handleSignOut}
-            className="text-secondary hover:text-primary !px-2 sm:!px-4 py-2"
+            className="text-muted-foreground hover:text-foreground !px-2 sm:!px-4 py-2"
           >
-            <span className="hidden sm:inline">Déconnexion</span>
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline ml-2">Déconnexion</span>
           </Button>
         </header>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8 sm:mb-12">
-          <Card variant="elevated" className="glass">
-            <CardHeader
-              icon={TrendingUp}
-              title="Revenus"
-              subtitle="Total mensuel"
-            />
-            <CardContent className="pt-2 md:pt-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2 mb-4 sm:mb-6">
+          <Card className="flex flex-col h-full">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="h-4 w-4 text-success" />
+                <div>
+                  <h3 className="font-semibold">Revenus</h3>
+                  <p className="text-sm text-muted-foreground">Total mensuel</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="mt-auto">
               <div className="text-lg md:text-3xl font-bold text-success">
                 {formatAmount(calculation.totalIncome)}
               </div>
             </CardContent>
           </Card>
 
-          <Card variant="elevated" className="glass">
-            <CardHeader
-              icon={TrendingDown}
-              title="Dépenses"
-              subtitle="Total mensuel"
-            />
-            <CardContent className="pt-2 md:pt-4">
-              <div className="text-lg md:text-3xl font-bold text-error">
+          <Card className="flex flex-col h-full">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <TrendingDown className="h-4 w-4 text-destructive" />
+                <div>
+                  <h3 className="font-semibold">Dépenses</h3>
+                  <p className="text-sm text-muted-foreground">Total mensuel</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="mt-auto">
+              <div className="text-lg md:text-3xl font-bold text-destructive">
                 {formatAmount(calculation.totalExpenses)}
               </div>
-              <div className="text-xs md:text-sm text-secondary mt-1 md:mt-2 hidden md:block">
+              <div className="text-xs md:text-sm text-muted-foreground mt-1 md:mt-2">
                 {formatAmount(calculation.remainingThisMonth)} restant ce mois
               </div>
             </CardContent>
           </Card>
-          
-          <Card variant="elevated" className="glass">
-            <CardHeader
-              icon={DollarSign}
-              title="Solde"
-              subtitle="Après dépenses"
-            />
-            <CardContent className="pt-2 md:pt-4">
+
+          <Card className="flex flex-col h-full">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <div>
+                  <h3 className="font-semibold">Solde</h3>
+                  <p className="text-sm text-muted-foreground">Après dépenses</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="mt-auto">
               <div className={`text-lg md:text-3xl font-bold ${getRemainingColor(calculation.remaining)}`}>
                 {formatAmount(calculation.remaining)}
               </div>
             </CardContent>
           </Card>
 
-          <Card variant="elevated" className="glass">
-            <CardHeader
-              icon={CreditCard}
-              title="Crédits"
-              subtitle="En cours"
-            />
-            <CardContent className="pt-2 md:pt-4">
-              <div className="text-lg md:text-3xl font-bold text-accent">
+          <Card className="flex flex-col h-full">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <div>
+                  <h3 className="font-semibold">Crédits</h3>
+                  <p className="text-sm text-muted-foreground">En cours</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="mt-auto">
+              <div className="text-lg md:text-3xl font-bold text-primary">
                 {calculation.activeCredits.count}
               </div>
-              <div className="text-xs md:text-sm text-secondary mt-1 md:mt-2">
+              <div className="text-xs md:text-sm text-muted-foreground mt-1 md:mt-2">
                 {formatAmount(calculation.activeCredits.totalMonthly)}/mois
               </div>
-              <div className="text-xs text-secondary mt-1 hidden md:block">
+              <div className="text-xs text-muted-foreground mt-1 ">
                 {formatAmount(calculation.activeCredits.totalRemaining)} restant
               </div>
             </CardContent>
@@ -195,57 +208,57 @@ const Dashboard = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-10">
+        <div className="flex flex-col sm:flex-row gap-2 mb-2 sm:mb-6">
           <Button
-            variant="primary"
-            icon={Plus}
+            variant="default"
             onClick={() => handleAddItem('expense')}
             size="lg"
             className="flex-1 justify-center py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold"
           >
+            <Plus className="mr-2 h-4 w-4" />
             Nouvelle dépense
           </Button>
           <Button
             variant="outline"
-            icon={Plus}
             onClick={() => handleAddItem('income')}
             size="lg"
             className="flex-1 justify-center py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold"
           >
+            <Plus className="mr-2 h-4 w-4" />
             Nouveau revenu
           </Button>
         </div>
 
         {/* View Mode & Filters */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             {/* View Mode Toggle */}
-            <div className="flex bg-surface border border-default rounded-lg p-1">
+            <div className="flex bg-muted border border-border rounded-lg p-1">
               <Button
-                variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-                icon={List}
-                className="flex-1 sm:flex-none rounded-md"
+                className="flex-1 sm:flex-none rounded-md !px-4"
               >
+                <List className="h-4 w-4" />
                 Liste
               </Button>
               <Button
-                variant={viewMode === 'calendar' ? 'primary' : 'ghost'}
+                variant={viewMode === 'calendar' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('calendar')}
-                icon={CalendarIcon}
-                className="flex-1 sm:flex-none rounded-md"
+                className="flex-1 sm:flex-none rounded-md !px-4"
               >
+                <CalendarIcon className="h-4 w-4" />
                 Calendrier
               </Button>
             </div>
-            
+
             {/* Filter (only for list view) */}
             {viewMode === 'list' && (
-              <div className="flex bg-surface border border-default rounded-lg p-1">
+              <div className="flex bg-muted border border-border rounded-lg p-1">
                 <Button
-                  variant={filter === 'all' ? 'primary' : 'ghost'}
+                  variant={filter === 'all' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setFilter('all')}
                   className="flex-1 sm:flex-none rounded-md"
@@ -253,7 +266,7 @@ const Dashboard = () => {
                   Tout
                 </Button>
                 <Button
-                  variant={filter === 'income' ? 'primary' : 'ghost'}
+                  variant={filter === 'income' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setFilter('income')}
                   className="flex-1 sm:flex-none rounded-md"
@@ -261,7 +274,7 @@ const Dashboard = () => {
                   Revenus
                 </Button>
                 <Button
-                  variant={filter === 'expense' ? 'primary' : 'ghost'}
+                  variant={filter === 'expense' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setFilter('expense')}
                   className="flex-1 sm:flex-none rounded-md"
@@ -275,19 +288,19 @@ const Dashboard = () => {
 
         {/* Content */}
         {viewMode === 'list' ? (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {filteredItems.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-12">
-                  <p className="text-secondary mb-4">
-                    {filter === 'all' ? 'Aucun élément trouvé' : 
-                     filter === 'income' ? 'Aucun revenu trouvé' : 'Aucune dépense trouvée'}
+                  <p className="text-muted-foreground mb-4">
+                    {filter === 'all' ? 'Aucun élément trouvé' :
+                      filter === 'income' ? 'Aucun revenu trouvé' : 'Aucune dépense trouvée'}
                   </p>
                   <Button
-                    variant="primary"
-                    icon={Plus}
+                    variant="default"
                     onClick={() => handleAddItem(filter === 'income' ? 'income' : 'expense')}
                   >
+                    <Plus className="mr-2 h-4 w-4" />
                     {filter === 'income' ? 'Ajouter un revenu' : 'Ajouter une dépense'}
                   </Button>
                 </CardContent>
@@ -296,11 +309,11 @@ const Dashboard = () => {
               (() => {
                 const elements: React.ReactNode[] = [];
                 let timeIndicatorShown = false;
-                
+
                 filteredItems.forEach((item) => {
                   const itemPosition = getPayCyclePosition(item.dayOfMonth);
                   const currentPosition = calculation.currentPosition;
-                  
+
                   // Afficher l'indicateur si on passe la position actuelle
                   if (!timeIndicatorShown && itemPosition > currentPosition) {
                     elements.push(
@@ -308,7 +321,7 @@ const Dashboard = () => {
                     );
                     timeIndicatorShown = true;
                   }
-                  
+
                   elements.push(
                     <MonthlyItemCard
                       key={item.id}
@@ -319,14 +332,14 @@ const Dashboard = () => {
                     />
                   );
                 });
-                
+
                 // Si l'indicateur n'a pas été affiché (on est après tous les items), l'afficher à la fin
                 if (!timeIndicatorShown) {
                   elements.push(
                     <TimeIndicator key="time-indicator" />
                   );
                 }
-                
+
                 return elements;
               })()
             )}
@@ -337,9 +350,9 @@ const Dashboard = () => {
 
         {/* Error Message */}
         {error && (
-          <Card variant="outlined" className="mt-6 border-red-500">
+          <Card className="mt-6 border-destructive">
             <CardContent>
-              <p className="text-red-400">{error}</p>
+              <p className="text-destructive">{error}</p>
             </CardContent>
           </Card>
         )}
@@ -358,7 +371,7 @@ const Dashboard = () => {
           />
         )}
       </div>
-      <Footer />
+      <Footer items={items} calculation={calculation} />
     </div>
   );
 };

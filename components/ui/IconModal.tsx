@@ -287,44 +287,44 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-2 md:p-4"
     >
-      <div className="bg-surface rounded-xl shadow-2xl w-full h-full md:h-[80vh] md:max-h-[600px] md:max-w-4xl overflow-hidden flex flex-col">
+      <div className="bg-card rounded-xl shadow-2xl w-full h-full md:h-[80vh] md:max-h-[600px] md:max-w-4xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 md:p-6 border-b border-default">
-          <h2 className="text-lg md:text-xl font-bold text-text">Choisir une icône</h2>
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-border">
+          <h2 className="text-lg md:text-xl font-bold text-foreground">Choisir une icône</h2>
           <button
             onClick={onClose}
-            className="text-secondary hover:text-text transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-5 w-5 md:h-6 md:w-6" />
           </button>
         </div>
 
         {/* Search */}
-        <div className="p-3 md:p-4 border-b border-default">
+        <div className="p-3 md:p-4 border-b border-border">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Rechercher une icône..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 md:py-3 bg-surface-elevated border border-default rounded-lg text-text placeholder-text-secondary outline-none text-sm md:text-base"
+              className="w-full pl-10 pr-4 py-2 md:py-3 bg-card-elevated border border-border rounded-lg text-foreground placeholder-text-muted-foreground outline-none text-sm md:text-base"
             />
           </div>
         </div>
 
         {/* Mobile Category Selector */}
-        <div className="md:hidden border-b border-default">
+        <div className="md:hidden border-b border-border">
           <button
             onClick={() => setShowMobileCategories(!showMobileCategories)}
-            className="w-full flex items-center justify-between p-4 text-text hover:bg-surface-elevated transition-colors"
+            className="w-full flex items-center justify-between p-4 text-foreground hover:bg-card-elevated transition-colors"
           >
             <span className="font-medium">{currentCategory.name} ({currentCategory.icons.length})</span>
             <ChevronRight className={`h-4 w-4 transition-transform ${showMobileCategories ? 'rotate-90' : ''}`} />
           </button>
           
           {showMobileCategories && (
-            <div className="border-t border-default bg-surface-elevated max-h-48 overflow-y-auto">
+            <div className="border-t border-border bg-card-elevated max-h-48 overflow-y-auto">
               {CATEGORIES.map((category) => (
                 <button
                   key={category.id}
@@ -335,7 +335,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
                   className={`w-full text-left px-4 py-3 text-sm transition-colors ${
                     selectedCategory === category.id
                       ? 'bg-primary text-white'
-                      : 'text-secondary hover:bg-surface hover:text-text'
+                      : 'text-muted-foreground hover:bg-card hover:text-foreground'
                   }`}
                 >
                   {category.name}
@@ -350,7 +350,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
 
         <div className="flex flex-1 overflow-hidden">
           {/* Desktop Categories Sidebar */}
-          <div className="hidden md:block w-48 border-r border-default bg-surface-elevated overflow-y-auto">
+          <div className="hidden md:block w-48 border-r border-border bg-card-elevated overflow-y-auto">
             <div className="p-2">
               {CATEGORIES.map((category) => (
                 <button
@@ -360,7 +360,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     selectedCategory === category.id
                       ? 'bg-primary text-white'
-                      : 'text-secondary hover:bg-surface hover:text-text'
+                      : 'text-muted-foreground hover:bg-card hover:text-foreground'
                   }`}
                 >
                   {category.name}
@@ -382,19 +382,19 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
                   className={`p-2 md:p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 active:scale-95 ${
                     selectedIcon === icon.name
                       ? 'border-primary bg-primary/10'
-                      : 'border-default hover:border-primary hover:bg-surface-elevated'
+                      : 'border-border hover:border-primary hover:bg-card-elevated'
                   }`}
                   title={icon.name}
                 >
                   <icon.icon className={`h-5 w-5 md:h-6 md:w-6 mx-auto ${
-                    selectedIcon === icon.name ? 'text-primary' : 'text-text'
+                    selectedIcon === icon.name ? 'text-primary' : 'text-foreground'
                   }`} />
                 </button>
               ))}
             </div>
 
             {filteredIcons.length === 0 && (
-              <div className="text-center py-8 md:py-12 text-secondary">
+              <div className="text-center py-8 md:py-12 text-muted-foreground">
                 <Search className="h-8 w-8 md:h-12 md:w-12 mx-auto mb-3 md:mb-4 opacity-50" />
                 <p className="text-sm md:text-base">Aucune icône trouvée</p>
                 <p className="text-xs md:text-sm mt-1 md:mt-2">Essayez un autre terme de recherche</p>

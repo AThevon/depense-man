@@ -15,26 +15,26 @@ const IconSelector = ({ selectedIcon, onIconSelect, className = '' }: IconSelect
 
   return (
     <div className={`relative ${className}`}>
-      <label className="block text-sm font-medium text-text mb-2">
+      <label className="block text-sm font-medium text-foreground mb-2">
         Icône
       </label>
       
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className="w-full flex items-center justify-between p-3 bg-surface border border-default rounded-lg hover:bg-surface-elevated transition-colors"
+        className="w-full flex items-center justify-between p-3 bg-card border border-border rounded-lg hover:bg-muted transition-colors"
       >
         <div className="flex items-center space-x-2">
           {selectedIconData ? (
             <>
               <selectedIconData.icon className="h-5 w-5 text-primary" />
-              <span className="text-text">{selectedIconData.name}</span>
+              <span className="text-foreground">{selectedIconData.name}</span>
             </>
           ) : (
-            <span className="text-secondary">Choisir une icône</span>
+            <span className="text-muted-foreground">Choisir une icône</span>
           )}
         </div>
-        <ChevronLeft className="h-5 w-5 text-secondary rotate-180" />
+        <ChevronLeft className="h-5 w-5 text-muted-foreground rotate-180" />
       </button>
 
       <IconModal

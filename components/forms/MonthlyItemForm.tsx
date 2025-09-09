@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit3, X } from 'lucide-react';
 import { FormData, FormErrors, MonthlyItem, ValidationResult } from '@/lib/types';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import IconSelector from '@/components/ui/IconSelector';
 
 interface MonthlyItemFormProps {
@@ -177,57 +177,80 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 p-0 md:p-4"
     >
-      <div className="bg-surface rounded-none md:rounded-xl shadow-xl w-full max-w-lg h-full md:h-auto md:max-h-[95vh] overflow-y-auto">
+      <div className="bg-card rounded-none md:rounded-xl shadow-xl w-full max-w-lg h-full md:h-auto md:max-h-[95vh] overflow-y-auto">
         <div className="p-4 md:p-6 pt-8 md:pt-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-text">
+            <h2 className="text-xl font-bold text-foreground">
               {title}
             </h2>
             <button
               type="button"
               onClick={onCancel}
-              className="text-secondary hover:text-text transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-6 w-6" />
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Input
-              label="Nom"
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              error={errors.name}
-              placeholder={`Nom du ${type === 'income' ? 'revenu' : 'dépense'}`}
-              disabled={loading}
-            />
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium text-foreground">
+                Nom
+              </label>
+              <Input
+                id="name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                placeholder={`Nom du ${type === 'income' ? 'revenu' : 'dépense'}`}
+                disabled={loading}
+              />
+              {errors.name && (
+                <p className="text-sm text-destructive">{errors.name}</p>
+              )}
+            </div>
 
-            <Input
-              label={formData.isCredit ? "Montant mensuel (€)" : "Montant (€)"}
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.amount}
-              onChange={(e) => handleInputChange('amount', e.target.value)}
-              error={errors.amount}
-              placeholder="0.00"
-              disabled={loading || formData.isCredit}
-              helper={formData.isCredit ? "Calculé automatiquement à partir du montant total" : undefined}
-            />
+            <div className="space-y-2">
+              <label htmlFor="amount" className="text-sm font-medium text-foreground">
+                {formData.isCredit ? "Montant mensuel (€)" : "Montant (€)"}
+              </label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.amount}
+                onChange={(e) => handleInputChange('amount', e.target.value)}
+                placeholder="0.00"
+                disabled={loading || formData.isCredit}
+              />
+              {formData.isCredit && (
+                <p className="text-xs text-muted-foreground">Calculé automatiquement à partir du montant total</p>
+              )}
+              {errors.amount && (
+                <p className="text-sm text-destructive">{errors.amount}</p>
+              )}
+            </div>
 
-            <Input
-              label="Jour du mois"
-              type="number"
-              min="1"
-              max="31"
-              value={formData.dayOfMonth}
-              onChange={(e) => handleInputChange('dayOfMonth', e.target.value)}
-              error={errors.dayOfMonth}
-              placeholder="1-31"
-              helper="Jour du mois où le montant est prélevé/versé"
-              disabled={loading}
-            />
+            <div className="space-y-2">
+              <label htmlFor="dayOfMonth" className="text-sm font-medium text-foreground">
+                Jour du mois
+              </label>
+              <Input
+                id="dayOfMonth"
+                type="number"
+                min="1"
+                max="31"
+                value={formData.dayOfMonth}
+                onChange={(e) => handleInputChange('dayOfMonth', e.target.value)}
+                placeholder="1-31"
+                disabled={loading}
+              />
+              <p className="text-xs text-muted-foreground">Jour du mois où le montant est prélevé/versé</p>
+              {errors.dayOfMonth && (
+                <p className="text-sm text-destructive">{errors.dayOfMonth}</p>
+              )}
+            </div>
 
             <IconSelector
               selectedIcon={formData.icon}
@@ -235,7 +258,7 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
               className="w-full"
             />
             {errors.icon && (
-              <p className="text-sm text-red-500 mt-1">{errors.icon}</p>
+              <p className="text-sm text-destructive mt-1">{errors.icon}</p>
             )}
 
             {type === 'expense' && (
@@ -246,56 +269,77 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
                     id="isCredit"
                     checked={formData.isCredit}
                     onChange={(e) => handleInputChange('isCredit', e.target.checked)}
-                    className="mr-2 h-4 w-4 text-primary focus:ring-primary border-default rounded"
+                    className="mr-2 h-4 w-4 text-primary focus:ring-primary border-border rounded"
                     disabled={loading}
                   />
-                  <label htmlFor="isCredit" className="text-sm font-medium text-text">
+                  <label htmlFor="isCredit" className="text-sm font-medium text-foreground">
                     Crédit (paiements échelonnés)
                   </label>
                 </div>
 
                 {formData.isCredit && (
                   <div className="space-y-4">
-                    <Input
-                      label="Montant total du crédit (€)"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.totalCreditAmount}
-                      onChange={(e) => handleInputChange('totalCreditAmount', e.target.value)}
-                      error={errors.totalCreditAmount}
-                      placeholder="600.00"
-                      helper="Montant total à rembourser"
-                      disabled={loading}
-                    />
+                    <div className="space-y-2">
+                      <label htmlFor="totalCreditAmount" className="text-sm font-medium text-foreground">
+                        Montant total du crédit (€)
+                      </label>
+                      <Input
+                        id="totalCreditAmount"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.totalCreditAmount}
+                        onChange={(e) => handleInputChange('totalCreditAmount', e.target.value)}
+                        placeholder="600.00"
+                        disabled={loading}
+                      />
+                      <p className="text-xs text-muted-foreground">Montant total à rembourser</p>
+                      {errors.totalCreditAmount && (
+                        <p className="text-sm text-destructive">{errors.totalCreditAmount}</p>
+                      )}
+                    </div>
                     
                     <div className="grid grid-cols-2 gap-4">
-                      <Input
-                        label="Date de début"
-                        type="date"
-                        value={formData.creditStartDate}
-                        onChange={(e) => handleInputChange('creditStartDate', e.target.value)}
-                        error={errors.creditStartDate}
-                        disabled={loading}
-                      />
+                      <div className="space-y-2">
+                        <label htmlFor="creditStartDate" className="text-sm font-medium text-foreground">
+                          Date de début
+                        </label>
+                        <Input
+                          id="creditStartDate"
+                          type="date"
+                          value={formData.creditStartDate}
+                          onChange={(e) => handleInputChange('creditStartDate', e.target.value)}
+                          disabled={loading}
+                        />
+                        {errors.creditStartDate && (
+                          <p className="text-sm text-destructive">{errors.creditStartDate}</p>
+                        )}
+                      </div>
 
-                      <Input
-                        label="Durée (mois)"
-                        type="number"
-                        min="1"
-                        max="60"
-                        value={formData.creditDuration}
-                        onChange={(e) => handleInputChange('creditDuration', e.target.value)}
-                        error={errors.creditDuration}
-                        placeholder="4"
-                        helper="Nombre de mois"
-                        disabled={loading}
-                      />
+                      <div className="space-y-2">
+                        <label htmlFor="creditDuration" className="text-sm font-medium text-foreground">
+                          Durée (mois)
+                        </label>
+                        <Input
+                          id="creditDuration"
+                          type="number"
+                          min="1"
+                          max="60"
+                          value={formData.creditDuration}
+                          onChange={(e) => handleInputChange('creditDuration', e.target.value)}
+                          placeholder="4"
+                          disabled={loading}
+                        />
+                        <p className="text-xs text-muted-foreground">Nombre de mois</p>
+                        {errors.creditDuration && (
+                          <p className="text-sm text-destructive">{errors.creditDuration}</p>
+                        )}
+                      </div>
                     </div>
                     
                     {formData.totalCreditAmount && formData.creditDuration && (
-                      <div className="p-3 bg-surface-elevated rounded-lg">
-                        <p className="text-sm text-secondary">
+                      <div className="p-3 bg-muted rounded-lg">
+                        <p className="text-sm text-muted-foreground">
                           <span className="font-medium">Montant mensuel : </span>
                           <span className="text-primary font-bold">
                             {(Number(formData.totalCreditAmount) / Number(formData.creditDuration)).toFixed(2)}€
@@ -311,22 +355,24 @@ const MonthlyItemForm = ({ type, item, onSubmit, onCancel, loading = false }: Mo
             <div className="flex space-x-3 pt-6">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={onCancel}
                 disabled={loading}
-                fullWidth
+                className="flex-1"
               >
                 Annuler
               </Button>
               <Button
                 type="submit"
-                variant="primary"
-                loading={loading}
                 disabled={loading}
-                fullWidth
-                icon={isEditing ? Edit3 : Plus}
+                className="flex-1"
               >
-                {isEditing ? 'Modifier' : 'Ajouter'}
+                {loading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                ) : (
+                  <>{isEditing ? <Edit3 className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}</>
+                )}
+                {loading ? 'Traitement...' : (isEditing ? 'Modifier' : 'Ajouter')}
               </Button>
             </div>
           </form>

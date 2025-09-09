@@ -3,8 +3,8 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 import { MonthlyItem, MonthlyExpense, calculateCreditInfo } from '@/lib/types';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 interface CalendarProps {
   items: MonthlyItem[];
@@ -101,6 +101,18 @@ const Calendar = ({ items }: CalendarProps) => {
   // Calculer les prévisions par cycle de paye
   const predictions = useMemo(() => {
     const today = new Date();
+    const payDay = 29; // Jour de paye standard
+    
+    // Trouver le dernier jour de paye qui est passé
+    let currentCycleStart: Date;
+    if (today.getDate() >= payDay) {
+      // On est après le jour de paye du mois actuel
+      currentCycleStart = new Date(today.getFullYear(), today.getMonth(), payDay);
+    } else {
+      // On est avant le jour de paye, donc le cycle a commencé le mois précédent
+      currentCycleStart = new Date(today.getFullYear(), today.getMonth() - 1, payDay);
+    }
+    
     const predictions: Array<{
       startDate: Date;
       endDate: Date;
@@ -111,8 +123,8 @@ const Calendar = ({ items }: CalendarProps) => {
 
     // Calculer les 12 prochains cycles de paye
     for (let i = 0; i < 12; i++) {
-      const cycleStart = new Date(today.getFullYear(), today.getMonth() + i, 29);
-      const cycleEnd = new Date(today.getFullYear(), today.getMonth() + i + 1, 28);
+      const cycleStart = new Date(currentCycleStart.getFullYear(), currentCycleStart.getMonth() + i, payDay);
+      const cycleEnd = new Date(currentCycleStart.getFullYear(), currentCycleStart.getMonth() + i + 1, payDay - 1);
       
       const cycleIncome = items.filter(item => item.type === 'income').reduce((sum, item) => sum + item.amount, 0);
       
@@ -120,19 +132,16 @@ const Calendar = ({ items }: CalendarProps) => {
       const cycleExpense = items.filter(item => item.type === 'expense').reduce((sum, item) => {
         const expenseItem = item as MonthlyExpense;
         if (expenseItem.isCredit) {
-          // Vérifier si le crédit sera encore actif durant ce cycle
-          const creditInfo = calculateCreditInfo(expenseItem);
-          if (creditInfo && creditInfo.isActive) {
-            // Calculer combien de paiements restent à cette date future
-            const futureDate = new Date(cycleStart);
-            const startDate = new Date(expenseItem.creditStartDate!);
-            
-            const monthsDiff = (futureDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                              (futureDate.getMonth() - startDate.getMonth());
-            
-            const paymentsRemaining = Math.max(0, expenseItem.creditDuration! - monthsDiff);
-            
-            if (paymentsRemaining > 0) {
+          const startDate = new Date(expenseItem.creditStartDate!);
+          const endDate = new Date(startDate);
+          endDate.setMonth(endDate.getMonth() + expenseItem.creditDuration!);
+          
+          // Vérifier si le crédit sera encore actif au moment du prélèvement (durant le cycle)
+          // Le crédit est prélevé pendant le cycle, donc on vérifie si il sera actif pendant cette période
+          // Si le crédit se termine avant le début du cycle, il ne sera pas prélevé
+          if (endDate > cycleStart) {
+            const creditInfo = calculateCreditInfo(expenseItem);
+            if (creditInfo && creditInfo.monthlyAmount > 0) {
               return sum + creditInfo.monthlyAmount;
             }
           }
@@ -177,18 +186,18 @@ const Calendar = ({ items }: CalendarProps) => {
   };
 
   const getDayColor = (day: DayData, isToday: boolean) => {
-    if (!day.isCurrentMonth) return 'text-gray-400';
-    if (isToday) return 'text-white';
-    if (day.total > 0) return 'text-green-500';
-    if (day.total < 0) return 'text-red-500';
-    return 'text-gray-600';
+    if (!day.isCurrentMonth) return 'text-muted-foreground';
+    if (isToday) return 'text-primary-foreground';
+    if (day.total > 0) return 'text-success';
+    if (day.total < 0) return 'text-destructive';
+    return 'text-muted-foreground';
   };
 
   const getDayBgColor = (day: DayData, isToday: boolean) => {
-    if (!day.isCurrentMonth) return 'bg-gray-50';
+    if (!day.isCurrentMonth) return 'bg-muted/50';
     if (isToday) return 'bg-primary';
-    if (day.items.length > 0) return 'bg-blue-50';
-    return 'bg-white';
+    if (day.items.length > 0) return 'bg-accent';
+    return 'bg-card';
   };
 
   return (
@@ -196,7 +205,7 @@ const Calendar = ({ items }: CalendarProps) => {
       <div className="p-4 md:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-text capitalize">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground capitalize">
             {monthName} {year}
           </h2>
           <div className="flex gap-2">
@@ -204,21 +213,23 @@ const Calendar = ({ items }: CalendarProps) => {
               variant="outline"
               size="sm"
               onClick={() => navigateMonth('prev')}
-              icon={ChevronLeft}
-            />
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigateMonth('next')}
-              icon={ChevronRight}
-            />
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
         {/* Jours de la semaine */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(day => (
-            <div key={day} className="text-center text-sm font-medium text-secondary py-2">
+            <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
               {day}
             </div>
           ))}
@@ -237,9 +248,9 @@ const Calendar = ({ items }: CalendarProps) => {
               <div
                 key={index}
                 className={`
-                  min-h-16 md:min-h-20 p-1 md:p-2 border border-gray-200 rounded-lg
+                  min-h-16 md:min-h-20 p-1 md:p-2 border border-border rounded-lg
                   ${getDayBgColor(day, isToday)}
-                  ${day.isCurrentMonth && !isToday ? 'hover:bg-gray-50' : ''}
+                  ${day.isCurrentMonth && !isToday ? 'hover:bg-muted/30' : ''}
                   transition-colors
                 `}
               >
@@ -253,7 +264,7 @@ const Calendar = ({ items }: CalendarProps) => {
                   {day.isCurrentMonth && day.items.length > 0 && (
                     <div className="flex-1 flex flex-col justify-center space-y-1">
                       {day.income > 0 && (
-                        <div className={`flex items-center text-xs ${isToday ? 'text-white' : 'text-green-600'}`}>
+                        <div className={`flex items-center text-xs ${isToday ? 'text-primary-foreground' : 'text-primary'}`}>
                           <TrendingUp className="h-3 w-3 mr-1" />
                           <span className="font-medium">
                             {formatAmount(day.income)}
@@ -261,7 +272,7 @@ const Calendar = ({ items }: CalendarProps) => {
                         </div>
                       )}
                       {day.expense > 0 && (
-                        <div className={`flex items-center text-xs ${isToday ? 'text-white' : 'text-red-600'}`}>
+                        <div className={`flex items-center text-xs ${isToday ? 'text-primary-foreground' : 'text-destructive'}`}>
                           <TrendingDown className="h-3 w-3 mr-1" />
                           <span className="font-medium">
                             {formatAmount(day.expense)}
@@ -284,26 +295,26 @@ const Calendar = ({ items }: CalendarProps) => {
         {/* Légende */}
         <div className="mt-6 flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-50 border border-gray-200 rounded"></div>
-            <span className="text-secondary">Jours avec transactions</span>
+            <div className="w-4 h-4 bg-accent border border-border rounded"></div>
+            <span className="text-muted-foreground">Jours avec transactions</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-primary rounded"></div>
-            <span className="text-secondary">Aujourd&apos;hui</span>
+            <span className="text-muted-foreground">Aujourd&apos;hui</span>
           </div>
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-green-600" />
-            <span className="text-secondary">Revenus</span>
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <span className="text-muted-foreground">Revenus</span>
           </div>
           <div className="flex items-center gap-2">
-            <TrendingDown className="h-4 w-4 text-red-600" />
-            <span className="text-secondary">Dépenses</span>
+            <TrendingDown className="h-4 w-4 text-destructive" />
+            <span className="text-muted-foreground">Dépenses</span>
           </div>
         </div>
 
         {/* Prévisions par cycle de paye */}
-        <div className="mt-6 border-t border-gray-200 pt-6">
-          <h3 className="text-lg font-semibold text-text mb-4">
+        <div className="mt-6 border-t border-border pt-6">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             Prévisions 12 mois (29 → 28)
           </h3>
           
@@ -313,17 +324,17 @@ const Calendar = ({ items }: CalendarProps) => {
               {predictions.map((prediction, index) => (
                 <div
                   key={index}
-                  className="p-3 bg-gray-50 rounded-lg text-center"
+                  className="p-3 bg-muted/50 rounded-lg text-center"
                 >
-                  <div className="font-medium text-text text-sm">
-                    {prediction.startDate.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })}
+                  <div className="font-medium text-foreground text-sm">
+                    {prediction.startDate.toLocaleDateString('fr-FR', { month: 'short' })} (29 → 28)
                   </div>
-                  <div className="text-xs text-secondary mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     {formatAmount(prediction.totalIncome)} - {formatAmount(prediction.totalExpense)}
                   </div>
                   <div className={`font-bold text-sm ${
-                    prediction.balance > 0 ? 'text-green-600' : 
-                    prediction.balance < 0 ? 'text-red-600' : 'text-gray-600'
+                    prediction.balance > 0 ? 'text-success' : 
+                    prediction.balance < 0 ? 'text-destructive' : 'text-muted-foreground'
                   }`}>
                     {formatAmount(prediction.balance)}
                   </div>
@@ -338,20 +349,20 @@ const Calendar = ({ items }: CalendarProps) => {
               {predictions.map((prediction, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-text text-sm">
-                      {prediction.startDate.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })}
+                    <div className="font-medium text-foreground text-sm">
+                      {prediction.startDate.toLocaleDateString('fr-FR', { month: 'short' })} (29 → 28)
                     </div>
-                    <div className="text-xs text-secondary">
+                    <div className="text-xs text-muted-foreground">
                       {formatAmount(prediction.totalIncome)} - {formatAmount(prediction.totalExpense)}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className={`font-bold text-sm ${
-                      prediction.balance > 0 ? 'text-green-600' : 
-                      prediction.balance < 0 ? 'text-red-600' : 'text-gray-600'
+                      prediction.balance > 0 ? 'text-success' : 
+                      prediction.balance < 0 ? 'text-destructive' : 'text-muted-foreground'
                     }`}>
                       {formatAmount(prediction.balance)}
                     </div>

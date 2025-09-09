@@ -4,9 +4,9 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Card, { CardHeader, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 const LoginForm = () => {
   const { signIn, loading, error } = useAuth();
@@ -44,59 +44,63 @@ const LoginForm = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-lg">
-        <Card variant="elevated" className="glass shadow-2xl">
-          <CardHeader className="flex flex-col items-center text-center py-8">
+        <Card className="shadow-lg">
+          <CardHeader className="flex flex-col items-center text-center ">
             <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-xl">
-                <Image
-                  src="/web-app-manifest-192x192.png"
-                  alt="Dépense-Man Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
-              </div>
+              {/* <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"> */}
+              <Image
+                src="/web-app-manifest-192x192.png"
+                alt="Dépense-Man Logo"
+                width={100}
+                height={100}
+                className="object-contain w-full h-full -mb-7"
+              />
+              {/* </div> */}
             </div>
-            <div className="flex flex-col items-center space-y-2">
-              <h1 className="text-4xl font-bold gradient-text">
-                Dépense-Man
-              </h1>
-              <p className="text-secondary text-lg">
-                Gérez vos finances en toute simplicité
-              </p>
-            </div>
+            <h1 className="text-4xl font-bold text-foreground">
+              Dépense-Man
+            </h1>
           </CardHeader>
 
           <CardContent className="px-8 pb-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit}>
               <div className="space-y-5">
-                <Input
-                  label="Email"
-                  type="email"
-                  icon={Mail}
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="votre@email.com"
-                  disabled={loading}
-                  required
-                />
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email
+                  </label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="votre@email.com"
+                    disabled={loading}
+                    required
+                  />
+                </div>
 
-                <Input
-                  label="Mot de passe"
-                  type="password"
-                  icon={Lock}
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  placeholder="••••••••"
-                  disabled={loading}
-                  showPasswordToggle={true}
-                  required
-                />
+                <div className="space-y-2">
+                  <label htmlFor="password" className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Lock className="h-4 w-4" />
+                    Mot de passe
+                  </label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    placeholder="••••••••"
+                    disabled={loading}
+                    required
+                  />
+                </div>
               </div>
 
               {(formError || error) && (
-                <div className="p-4 bg-error/10 border border-error/30 rounded-xl">
-                  <p className="text-sm text-error font-medium">
+                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-sm text-destructive font-medium">
                     {formError || error}
                   </p>
                 </div>
@@ -104,15 +108,12 @@ const LoginForm = () => {
 
               <Button
                 type="submit"
-                variant="primary"
-                fullWidth
-                loading={loading}
                 disabled={loading}
-                icon={LogIn}
                 size="lg"
-                className="mt-8"
+                className="w-full mt-4"
               >
-                Se connecter
+                <LogIn className="mr-2 h-4 w-4" />
+                {loading ? 'Connexion...' : 'Se connecter'}
               </Button>
             </form>
           </CardContent>
