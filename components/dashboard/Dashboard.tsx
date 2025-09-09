@@ -6,7 +6,7 @@ import { MonthlyItem, FormData, CreateMonthlyItemInput, getPayCyclePosition } fr
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyItems } from '@/hooks/useMonthlyItems';
 import { Card, CardHeader, CardContent } from '@/components/ui/icard';
-import { Button } from '@/components/ui/ibutton';
+import { Button } from '@/components/ui/button';
 import MonthlyItemCard from './MonthlyItemCard';
 import MonthlyItemForm from '@/components/forms/MonthlyItemForm';
 import TimeIndicator from './TimeIndicator';

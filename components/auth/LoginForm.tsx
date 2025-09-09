@@ -4,8 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/ibutton';
-import { Input } from '@/components/ui/iinput';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardContent } from '@/components/ui/icard';
 
 const LoginForm = () => {
