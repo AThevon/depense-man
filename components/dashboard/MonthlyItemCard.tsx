@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Edit3, Trash2, Calendar, CreditCard } from 'lucide-react';
 import { MonthlyItem, MonthlyExpense, calculateCreditInfo } from '@/lib/types';
 import { ALL_ICONS } from '@/components/ui/IconModal';
-import { Card, CardContent } from '@/components/ui/icard';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 interface MonthlyItemCardProps {
