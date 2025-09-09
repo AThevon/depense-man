@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit3, X } from 'lucide-react';
 import { FormData, FormErrors, MonthlyItem, ValidationResult } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/ibutton';
+import { Input } from '@/components/ui/iinput';
 import IconSelector from '@/components/ui/IconSelector';
 
 interface MonthlyItemFormProps {

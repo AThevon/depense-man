@@ -5,8 +5,8 @@ import { Plus, TrendingUp, TrendingDown, DollarSign, LogOut, CreditCard, Calenda
 import { MonthlyItem, FormData, CreateMonthlyItemInput, getPayCyclePosition } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useMonthlyItems } from '@/hooks/useMonthlyItems';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent } from '@/components/ui/icard';
+import { Button } from '@/components/ui/ibutton';
 import MonthlyItemCard from './MonthlyItemCard';
 import MonthlyItemForm from '@/components/forms/MonthlyItemForm';
 import TimeIndicator from './TimeIndicator';

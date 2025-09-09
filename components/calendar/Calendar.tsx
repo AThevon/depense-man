@@ -3,8 +3,8 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 import { MonthlyItem, MonthlyExpense, calculateCreditInfo } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/ibutton';
+import { Card } from '@/components/ui/icard';
 
 interface CalendarProps {
   items: MonthlyItem[];
