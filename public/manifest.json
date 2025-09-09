@@ -5,7 +5,7 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#232323",
-  "theme_color": "#f59e0b",
+  "theme_color": "#232323",
   "orientation": "portrait",
   "categories": ["finance", "productivity"],
   "lang": "fr-FR",

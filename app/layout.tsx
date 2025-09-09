@@ -54,7 +54,7 @@ export function generateViewport() {
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
-    themeColor: "#f59e0b",
+    themeColor: "#232323",
   };
 }
 
@@ -70,10 +70,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="D-Man" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#f59e0b" />
+        <meta name="msapplication-TileColor" content="#232323" />
         <meta name="msapplication-tap-highlight" content="no" />
         <link rel="apple-touch-icon" href="/web-app-manifest-192x192.png" />
-        <link rel="mask-icon" href="/web-app-manifest-192x192.png" color="#f59e0b" />
+        <link rel="mask-icon" href="/web-app-manifest-192x192.png" color="#232323" />
       </head>
       <body className={`${fontSans.variable} ${fontMono.variable} antialiased`}>
         {children}
