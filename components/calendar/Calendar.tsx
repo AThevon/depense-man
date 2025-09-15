@@ -3,8 +3,10 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 import { MonthlyItem, MonthlyExpense, calculateCreditInfo } from '@/lib/types';
+import { PAY_DAY } from '@/consts';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { PredictionCard } from './PredictionCard';
 
 interface CalendarProps {
   items: MonthlyItem[];
@@ -101,16 +103,16 @@ const Calendar = ({ items }: CalendarProps) => {
   // Calculer les prévisions par cycle de paye
   const predictions = useMemo(() => {
     const today = new Date();
-    const payDay = 29; // Jour de paye standard
+    const payDay = PAY_DAY;
     
-    // Trouver le dernier jour de paye qui est passé
+    // Déterminer le prochain cycle de paye (pour les prévisions)
     let currentCycleStart: Date;
     if (today.getDate() >= payDay) {
-      // On est après le jour de paye du mois actuel
-      currentCycleStart = new Date(today.getFullYear(), today.getMonth(), payDay);
+      // On est après le jour de paye du mois actuel, le prochain cycle commence le mois suivant
+      currentCycleStart = new Date(today.getFullYear(), today.getMonth() + 1, payDay);
     } else {
-      // On est avant le jour de paye, donc le cycle a commencé le mois précédent
-      currentCycleStart = new Date(today.getFullYear(), today.getMonth() - 1, payDay);
+      // On est avant le jour de paye, le prochain cycle commence ce mois-ci
+      currentCycleStart = new Date(today.getFullYear(), today.getMonth(), payDay);
     }
     
     const predictions: Array<{
@@ -133,24 +135,31 @@ const Calendar = ({ items }: CalendarProps) => {
         const expenseItem = item as MonthlyExpense;
         if (expenseItem.isCredit) {
           const startDate = new Date(expenseItem.creditStartDate!);
-          const endDate = new Date(startDate);
-          endDate.setMonth(endDate.getMonth() + expenseItem.creditDuration!);
-          
-          // Vérifier si le crédit sera encore actif au moment du prélèvement (durant le cycle)
-          // Le crédit est prélevé pendant le cycle, donc on vérifie si il sera actif pendant cette période
-          // Si le crédit se termine avant le début du cycle, il ne sera pas prélevé
-          if (endDate > cycleStart) {
-            const creditInfo = calculateCreditInfo(expenseItem);
-            if (creditInfo && creditInfo.monthlyAmount > 0) {
-              return sum + creditInfo.monthlyAmount;
-            }
+          const creditDuration = expenseItem.creditDuration!;
+
+          // Calculer le mois de fin du crédit (inclus)
+          const endYear = startDate.getFullYear();
+          const endMonth = startDate.getMonth() + creditDuration - 1;
+
+          // Normaliser l'année/mois de fin
+          const finalEndYear = endYear + Math.floor(endMonth / 12);
+          const finalEndMonth = endMonth % 12;
+
+          // Vérifier si ce cycle est encore dans la période du crédit
+          const cycleYear = cycleStart.getFullYear();
+          const cycleMonth = cycleStart.getMonth();
+
+          if (cycleYear < finalEndYear || (cycleYear === finalEndYear && cycleMonth <= finalEndMonth)) {
+            return sum + expenseItem.amount;
           }
           return sum;
         }
         return sum + item.amount;
       }, 0);
 
+
               const balance = cycleIncome - cycleExpense;
+
 
         predictions.push({
           startDate: cycleStart,
@@ -315,30 +324,20 @@ const Calendar = ({ items }: CalendarProps) => {
         {/* Prévisions par cycle de paye */}
         <div className="mt-6 border-t border-border pt-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
-            Prévisions 12 mois (29 → 28)
+            Prévisions 12 mois ({PAY_DAY} → {PAY_DAY - 1})
           </h3>
           
           {/* Version desktop - tableau */}
           <div className="hidden md:block">
             <div className="grid grid-cols-4 gap-2">
               {predictions.map((prediction, index) => (
-                <div
+                <PredictionCard
                   key={index}
-                  className="p-3 bg-muted/50 rounded-lg text-center"
-                >
-                  <div className="font-medium text-foreground text-sm">
-                    {prediction.startDate.toLocaleDateString('fr-FR', { month: 'short' })} (29 → 28)
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {formatAmount(prediction.totalIncome)} - {formatAmount(prediction.totalExpense)}
-                  </div>
-                  <div className={`font-bold text-sm ${
-                    prediction.balance > 0 ? 'text-success' : 
-                    prediction.balance < 0 ? 'text-destructive' : 'text-muted-foreground'
-                  }`}>
-                    {formatAmount(prediction.balance)}
-                  </div>
-                </div>
+                  prediction={prediction}
+                  isCurrentMonth={index === 0}
+                  variant="desktop"
+                  formatAmount={formatAmount}
+                />
               ))}
             </div>
           </div>
@@ -347,27 +346,13 @@ const Calendar = ({ items }: CalendarProps) => {
           <div className="md:hidden">
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {predictions.map((prediction, index) => (
-                <div
+                <PredictionCard
                   key={index}
-                  className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
-                >
-                  <div className="flex-1">
-                    <div className="font-medium text-foreground text-sm">
-                      {prediction.startDate.toLocaleDateString('fr-FR', { month: 'short' })} (29 → 28)
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatAmount(prediction.totalIncome)} - {formatAmount(prediction.totalExpense)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className={`font-bold text-sm ${
-                      prediction.balance > 0 ? 'text-success' : 
-                      prediction.balance < 0 ? 'text-destructive' : 'text-muted-foreground'
-                    }`}>
-                      {formatAmount(prediction.balance)}
-                    </div>
-                  </div>
-                </div>
+                  prediction={prediction}
+                  isCurrentMonth={index === 0}
+                  variant="mobile"
+                  formatAmount={formatAmount}
+                />
               ))}
             </div>
           </div>

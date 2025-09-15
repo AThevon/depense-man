@@ -230,8 +230,10 @@ export function calculateCreditInfo(expense: MonthlyExpense): CreditInfo | null 
   };
 }
 
+import { PAY_DAY } from '@/consts';
+
 // Utility functions for pay cycle calculations
-export function getPayCyclePosition(dayOfMonth: number, payDay: number = 29): number {
+export function getPayCyclePosition(dayOfMonth: number, payDay: number = PAY_DAY): number {
   if (dayOfMonth >= payDay) {
     return dayOfMonth - payDay; // Jours après la paye
   } else {
@@ -239,7 +241,7 @@ export function getPayCyclePosition(dayOfMonth: number, payDay: number = 29): nu
   }
 }
 
-export function getCurrentPayCyclePosition(payDay: number = 29): number {
+export function getCurrentPayCyclePosition(payDay: number = PAY_DAY): number {
   const today = new Date();
   return getPayCyclePosition(today.getDate(), payDay);
 } 
