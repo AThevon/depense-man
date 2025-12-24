@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import { calculateCreditInfoAtDate } from './creditCalculations';
 
 export interface BaseMonthlyItem {
   id: string;
@@ -160,7 +161,8 @@ export interface UseAuthReturn {
   resetPassword: (email: string) => Promise<void>;
 }
 
-// Credit calculation utilities
+// Credit calculation utilities - DEPRECATED: Use creditCalculations.ts instead
+// Kept for backward compatibility
 export interface CreditInfo {
   monthlyAmount: number;
   totalAmount: number;
@@ -170,63 +172,21 @@ export interface CreditInfo {
   progressPercentage: number;
 }
 
+/**
+ * @deprecated Use calculateCreditInfoAtDate from creditCalculations.ts instead
+ */
 export function calculateCreditInfo(expense: MonthlyExpense): CreditInfo | null {
-  if (!expense.isCredit || !expense.totalCreditAmount || !expense.creditDuration || !expense.creditStartDate) {
-    return null;
-  }
+  const info = calculateCreditInfoAtDate(expense);
 
-  const monthlyAmount = expense.totalCreditAmount / expense.creditDuration;
-  const now = new Date();
-  const startDate = new Date(expense.creditStartDate);
-  
-  // Calculate payments made based on payment cycles
-  let paymentsMade = 0;
-  const paymentDay = expense.dayOfMonth;
-  
-  // Calculate how many payment cycles have been completed
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const currentDay = now.getDate();
-  
-  const startYear = startDate.getFullYear();
-  const startMonth = startDate.getMonth();
-  
-  // Count completed payment cycles
-  let year = startYear;
-  let month = startMonth;
-  
-  while (year < currentYear || (year === currentYear && month <= currentMonth)) {
-    // Check if this payment cycle has been completed
-    if (year < currentYear || (year === currentYear && month < currentMonth) || 
-        (year === currentYear && month === currentMonth && currentDay >= paymentDay)) {
-      paymentsMade++;
-    }
-    
-    // Move to next month
-    month++;
-    if (month > 11) {
-      month = 0;
-      year++;
-    }
-    
-    // Don't count more payments than the duration
-    if (paymentsMade >= expense.creditDuration) {
-      break;
-    }
-  }
-  
-  const remainingPayments = Math.max(0, expense.creditDuration - paymentsMade);
-  const remainingAmount = monthlyAmount * remainingPayments;
-  const isActive = remainingPayments > 0;
-  const progressPercentage = (paymentsMade / expense.creditDuration) * 100;
+  if (!info) return null;
 
   return {
-    monthlyAmount,
-    totalAmount: expense.totalCreditAmount,
-    remainingAmount,
-    remainingPayments,
-    isActive,
-    progressPercentage
+    monthlyAmount: info.monthlyAmount,
+    totalAmount: info.totalAmount,
+    remainingAmount: info.remainingAmount,
+    remainingPayments: info.remainingPayments,
+    isActive: info.isActive,
+    progressPercentage: info.progressPercentage
   };
 }
 

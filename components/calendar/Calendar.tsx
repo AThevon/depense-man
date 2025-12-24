@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
-import { MonthlyItem, MonthlyExpense, calculateCreditInfo } from '@/lib/types';
+import { MonthlyItem, MonthlyExpense} from '@/lib/types';
+import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { PAY_DAY } from '@/consts';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -60,7 +61,7 @@ const Calendar = ({ items }: CalendarProps) => {
       const expense = dayItems.filter(item => item.type === 'expense').reduce((sum, item) => {
         const expenseItem = item as MonthlyExpense;
         if (expenseItem.isCredit) {
-          const creditInfo = calculateCreditInfo(expenseItem);
+          const creditInfo = calculateCreditInfoAtDate(expenseItem);
           if (creditInfo && creditInfo.isActive) {
             return sum + creditInfo.monthlyAmount;
           }
@@ -126,7 +127,7 @@ const Calendar = ({ items }: CalendarProps) => {
     // Calculer les 12 prochains cycles de paye
     for (let i = 0; i < 12; i++) {
       const cycleStart = new Date(currentCycleStart.getFullYear(), currentCycleStart.getMonth() + i, payDay);
-      const cycleEnd = new Date(currentCycleStart.getFullYear(), currentCycleStart.getMonth() + i + 1, payDay - 1);
+      const cycleEnd = new Date(currentCycleStart.getFullYear(), currentCycleStart.getMonth() + i + 1, 28);
       
       const cycleIncome = items.filter(item => item.type === 'income').reduce((sum, item) => sum + item.amount, 0);
       
@@ -134,23 +135,23 @@ const Calendar = ({ items }: CalendarProps) => {
       const cycleExpense = items.filter(item => item.type === 'expense').reduce((sum, item) => {
         const expenseItem = item as MonthlyExpense;
         if (expenseItem.isCredit) {
-          const startDate = new Date(expenseItem.creditStartDate!);
-          const creditDuration = expenseItem.creditDuration!;
+          // Vérifier si le prélèvement du crédit tombe pendant ce cycle
+          const dayOfPayment = expenseItem.dayOfMonth;
 
-          // Calculer le mois de fin du crédit (inclus)
-          const endYear = startDate.getFullYear();
-          const endMonth = startDate.getMonth() + creditDuration - 1;
+          // Calculer la date de prélèvement dans ce cycle
+          let paymentDate: Date;
+          if (dayOfPayment >= payDay) {
+            // Prélèvement dans la première partie du cycle
+            paymentDate = new Date(cycleStart.getFullYear(), cycleStart.getMonth(), dayOfPayment, 12, 0, 0);
+          } else {
+            // Prélèvement dans la deuxième partie (mois suivant)
+            paymentDate = new Date(cycleEnd.getFullYear(), cycleEnd.getMonth(), dayOfPayment, 12, 0, 0);
+          }
 
-          // Normaliser l'année/mois de fin
-          const finalEndYear = endYear + Math.floor(endMonth / 12);
-          const finalEndMonth = endMonth % 12;
-
-          // Vérifier si ce cycle est encore dans la période du crédit
-          const cycleYear = cycleStart.getFullYear();
-          const cycleMonth = cycleStart.getMonth();
-
-          if (cycleYear < finalEndYear || (cycleYear === finalEndYear && cycleMonth <= finalEndMonth)) {
-            return sum + expenseItem.amount;
+          // Vérifier si le crédit est actif à la date de prélèvement
+          const creditInfo = calculateCreditInfoAtDate(expenseItem, paymentDate);
+          if (creditInfo?.isActive) {
+            return sum + creditInfo.monthlyAmount;
           }
           return sum;
         }
@@ -326,7 +327,7 @@ const Calendar = ({ items }: CalendarProps) => {
           <h3 className="text-lg font-semibold text-foreground mb-4">
             Prévisions 12 mois ({PAY_DAY} → {PAY_DAY - 1})
           </h3>
-          
+
           {/* Version desktop - tableau */}
           <div className="hidden md:block">
             <div className="grid grid-cols-4 gap-2">

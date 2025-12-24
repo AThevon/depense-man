@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { Edit3, Trash2, Calendar, CreditCard } from 'lucide-react';
-import { MonthlyItem, MonthlyExpense, calculateCreditInfo } from '@/lib/types';
-import { ALL_ICONS } from '@/components/ui/IconModal';
+import { MonthlyItem, MonthlyExpense} from '@/lib/types';
+import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
+import { Icon } from '@/components/ui/Icon';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -19,7 +20,6 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
   const [isDragging, setIsDragging] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const IconComponent = ALL_ICONS.find(icon => icon.name === item.icon)?.icon;
   const isExpense = item.type === 'expense';
   const expenseItem = isExpense ? item as MonthlyExpense : null;
   const isCredit = expenseItem?.isCredit || false;
@@ -36,7 +36,7 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
     }).format(amount);
   };
 
-  const creditInfo = expenseItem ? calculateCreditInfo(expenseItem) : null;
+  const creditInfo = expenseItem ? calculateCreditInfoAtDate(expenseItem) : null;
 
   // Gestion du swipe sur mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -123,9 +123,7 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
           <div className="flex items-center justify-between gap-3">
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             <div className="p-2 sm:p-3 rounded-lg flex-shrink-0 bg-secondary/50">
-              {IconComponent && (
-                <IconComponent className={`h-5 w-5 sm:h-6 sm:w-6 ${isExpense ? 'text-destructive' : 'text-success'}`} />
-              )}
+              <Icon name={item.icon} className={`h-5 w-5 sm:h-6 sm:w-6 ${isExpense ? 'text-destructive' : 'text-success'}`} />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -183,7 +181,7 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
           </div>
         </div>
 
-          {creditInfo && (
+          {creditInfo && creditInfo.isActive && (
             <div className="mt-4 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground font-medium">Progression</span>

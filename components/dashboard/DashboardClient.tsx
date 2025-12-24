@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Plus, TrendingUp, TrendingDown, DollarSign, LogOut, CreditCard, Calendar as CalendarIcon, List, BarChart3, Columns, TableProperties, Grid3x3, Activity, LayoutGrid } from 'lucide-react';
-import { MonthlyItem, FormData, CreateMonthlyItemInput, getPayCyclePosition } from '@/lib/types';
-import { useAuth } from '@/hooks/useAuth';
-import { useMonthlyItems } from '@/hooks/useMonthlyItems';
+import { useState, useMemo, useOptimistic } from 'react';
+import { Plus, TrendingUp, TrendingDown, DollarSign, CreditCard, Calendar as CalendarIcon, List, BarChart3, Columns, TableProperties, Grid3x3, Activity, LayoutGrid } from 'lucide-react';
+import { MonthlyItem, MonthlyCalculation, getPayCyclePosition } from '@/lib/types';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MonthlyItemCard from './MonthlyItemCard';
-import MonthlyItemForm from '@/components/forms/MonthlyItemForm';
+import { ExpenseFormModal } from '@/components/forms/ExpenseFormModal';
+import { IncomeFormModal } from '@/components/forms/IncomeFormModal';
 import TimeIndicator from './TimeIndicator';
 import Footer from '@/components/ui/Footer';
 import Calendar from '@/components/calendar/Calendar';
@@ -19,10 +18,24 @@ import CompactView from '@/components/views/CompactView';
 import HeatmapView from '@/components/views/HeatmapView';
 import KanbanView from '@/components/views/KanbanView';
 import TreemapView from '@/components/views/TreemapView';
+import { LogoutButton } from '@/components/auth/LogoutButton';
 
-const Dashboard = () => {
-  const { user, signOut } = useAuth();
-  const { items, loading, error, addItem, updateItem, deleteItem, calculation } = useMonthlyItems(user?.uid);
+interface DashboardClientProps {
+  items: MonthlyItem[];
+  calculation: MonthlyCalculation;
+}
+
+/**
+ * Client Component pour le Dashboard
+ * Reçoit les données depuis le Server Component parent
+ * Gère uniquement l'interactivité (state, modals, etc.)
+ */
+export function DashboardClient({ items: initialItems, calculation: initialCalculation }: DashboardClientProps) {
+  // Optimistic UI - mise à jour instantanée avant la confirmation serveur
+  const [optimisticItems, addOptimisticItem] = useOptimistic(
+    initialItems,
+    (state, newItem: MonthlyItem) => [...state, newItem]
+  );
 
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState<'income' | 'expense'>('expense');
@@ -30,6 +43,11 @@ const Dashboard = () => {
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [mainTab, setMainTab] = useState<'dashboard' | 'stats'>('dashboard');
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'timeline' | 'compact' | 'heatmap' | 'kanban' | 'treemap'>('list');
+  const [loading, setLoading] = useState(false);
+
+  // Utiliser les items optimistes
+  const items = optimisticItems;
+  const calculation = initialCalculation; // TODO: recalculer avec optimisticItems
 
   const filteredItems = useMemo(() => {
     if (filter === 'all') return items;
@@ -48,51 +66,15 @@ const Dashboard = () => {
     setShowForm(true);
   };
 
-  const handleFormSubmit = async (formData: FormData) => {
-    const itemData: CreateMonthlyItemInput = {
-      userId: user!.uid,
-      name: formData.name,
-      amount: Number(formData.amount),
-      dayOfMonth: Number(formData.dayOfMonth),
-      icon: formData.icon,
-      type: formType,
-      ...(formType === 'expense' && {
-        isCredit: formData.isCredit,
-        ...(formData.isCredit && {
-          totalCreditAmount: Number(formData.totalCreditAmount),
-          creditStartDate: new Date(formData.creditStartDate!),
-          creditDuration: Number(formData.creditDuration),
-        }),
-      }),
-    };
-
-    try {
-      if (editingItem) {
-        await updateItem({ id: editingItem.id, ...itemData });
-      } else {
-        await addItem(itemData);
-      }
-      setShowForm(false);
-      setEditingItem(undefined);
-    } catch (error) {
-      console.error('Erreur lors de la soumission:', error);
-    }
+  const handleFormSuccess = () => {
+    setShowForm(false);
+    setEditingItem(undefined);
+    // Les données seront automatiquement mises à jour via revalidatePath()
   };
 
   const handleDeleteItem = async (id: string) => {
-    try {
-      await deleteItem(id);
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-    }
+    // TODO: Implémenter delete avec Server Action + useOptimistic
+    console.log('Delete item:', id);
   };
 
   const formatAmount = (amount: number) => {
@@ -108,31 +90,13 @@ const Dashboard = () => {
     return 'text-primary';
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
         {/* Header */}
         <header className="flex items-center justify-between mb-4 sm:mb-6">
           <h1 className="text-2xl sm:text-4xl font-bold text-foreground">Dépense-Man</h1>
-          <Button
-            variant="ghost"
-            onClick={handleSignOut}
-            className="text-muted-foreground hover:text-foreground !px-2 sm:!px-4 py-2"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline ml-2">Déconnexion</span>
-          </Button>
+          <LogoutButton />
         </header>
 
         {/* Summary Cards */}
@@ -443,32 +407,30 @@ const Dashboard = () => {
           )}
         </Tabs>
 
-        {/* Error Message */}
-        {error && (
-          <Card className="mt-6 border-destructive">
-            <CardContent>
-              <p className="text-destructive">{error}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Form Modal */}
-        {showForm && (
-          <MonthlyItemForm
-            type={formType}
+        {/* Form Modals */}
+        {showForm && formType === 'expense' && (
+          <ExpenseFormModal
             item={editingItem}
-            onSubmit={handleFormSubmit}
+            onSuccess={handleFormSuccess}
             onCancel={() => {
               setShowForm(false);
               setEditingItem(undefined);
             }}
-            loading={loading}
+          />
+        )}
+
+        {showForm && formType === 'income' && (
+          <IncomeFormModal
+            item={editingItem}
+            onSuccess={handleFormSuccess}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingItem(undefined);
+            }}
           />
         )}
       </div>
       <Footer items={items} calculation={calculation} />
     </div>
   );
-};
-
-export default Dashboard; 
+}
