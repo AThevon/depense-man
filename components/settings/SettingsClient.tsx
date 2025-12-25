@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, User, Bell, Palette, Database, Shield, Info } from 'lucide-react';
+import { ArrowLeft, User, Palette, Database, Info } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/auth/actions';
@@ -24,10 +24,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
 
   const sections = [
     { id: 'account', icon: User, label: 'Compte', description: 'Informations de connexion' },
-    { id: 'notifications', icon: Bell, label: 'Notifications', description: 'Préférences de notification' },
     { id: 'appearance', icon: Palette, label: 'Apparence', description: 'Thème et affichage' },
-    { id: 'data', icon: Database, label: 'Données', description: 'Export et sauvegarde' },
-    { id: 'privacy', icon: Shield, label: 'Confidentialité', description: 'Sécurité et vie privée' },
+    { id: 'data', icon: Database, label: 'Données', description: 'Gestion des données' },
     { id: 'about', icon: Info, label: 'À propos', description: 'Version et informations' },
   ];
 
@@ -60,7 +58,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
 
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl">
         {/* Settings Navigation */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {sections.map((section) => {
             const Icon = section.icon;
             return (
@@ -110,6 +108,18 @@ export function SettingsClient({ user }: SettingsClientProps) {
                   </div>
                 </div>
 
+                <div className="space-y-2 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <p className="font-medium text-foreground">Changer le mot de passe</p>
+                      <p className="text-sm text-muted-foreground">Mettre à jour vos identifiants</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      Modifier
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="pt-4 border-t border-border">
                   <Button
                     variant="destructive"
@@ -118,56 +128,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
                   >
                     Se déconnecter
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {activeSection === 'notifications' && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <Bell className="h-5 w-5 text-primary" />
-                  <div>
-                    <h2 className="text-lg font-semibold">Notifications</h2>
-                    <p className="text-sm text-muted-foreground">Configurez vos préférences de notification</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div>
-                    <p className="font-medium text-foreground">Rappels de paiement</p>
-                    <p className="text-sm text-muted-foreground">Recevoir des rappels avant échéance</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
-                    defaultChecked
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div>
-                    <p className="font-medium text-foreground">Notifications push</p>
-                    <p className="text-sm text-muted-foreground">Activer les notifications mobiles</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div>
-                    <p className="font-medium text-foreground">Résumé mensuel</p>
-                    <p className="text-sm text-muted-foreground">Recevoir un récapitulatif par email</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
-                    defaultChecked
-                  />
                 </div>
               </CardContent>
             </Card>
@@ -243,88 +203,14 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-muted rounded-lg space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-foreground">Exporter les données</p>
-                      <p className="text-sm text-muted-foreground">Télécharger toutes vos données en JSON</p>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      Exporter
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-muted rounded-lg space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-foreground">Importer des données</p>
-                      <p className="text-sm text-muted-foreground">Restaurer depuis une sauvegarde</p>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      Importer
-                    </Button>
-                  </div>
-                </div>
-
                 <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-destructive">Supprimer toutes les données</p>
-                      <p className="text-sm text-muted-foreground">Action irréversible</p>
+                      <p className="text-sm text-muted-foreground">Action irréversible - supprime tous vos revenus, dépenses et crédits</p>
                     </div>
                     <Button variant="destructive" size="sm">
                       Supprimer
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {activeSection === 'privacy' && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <div>
-                    <h2 className="text-lg font-semibold">Confidentialité et sécurité</h2>
-                    <p className="text-sm text-muted-foreground">Protégez vos informations</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div>
-                    <p className="font-medium text-foreground">Verrouillage biométrique</p>
-                    <p className="text-sm text-muted-foreground">Face ID / Touch ID</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div>
-                    <p className="font-medium text-foreground">Mode hors ligne</p>
-                    <p className="text-sm text-muted-foreground">Stocker localement les données</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
-                    defaultChecked
-                  />
-                </div>
-
-                <div className="p-4 bg-muted rounded-lg space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-foreground">Changer le mot de passe</p>
-                      <p className="text-sm text-muted-foreground">Mettre à jour vos identifiants</p>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      Modifier
                     </Button>
                   </div>
                 </div>
