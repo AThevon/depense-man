@@ -1,6 +1,6 @@
 'use client';
 
-import { Github, Heart, Sparkles, TrendingUp, Shield, Zap } from 'lucide-react';
+import { Github, Sparkles } from 'lucide-react';
 import { MonthlyItem, MonthlyCalculation } from '@/lib/types';
 import { motion } from 'motion/react';
 
