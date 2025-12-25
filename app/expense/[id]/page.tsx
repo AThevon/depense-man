@@ -10,7 +10,11 @@ export default async function ExpensePage({
   const { id } = await params;
 
   return (
-    <Suspense fallback={<Spinner size="lg" />}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    }>
       <ExpenseDetailClient expenseId={id} />
     </Suspense>
   );

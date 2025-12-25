@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import { Plus, Calendar as CalendarIcon, List, Columns, TableProperties, Grid3x3, Activity, LayoutGrid } from 'lucide-react';
 import { MonthlyItem, MonthlyExpense, getPayCyclePosition } from '@/lib/types';
 import { useExpensesStore } from '@/lib/store/expenses';
@@ -16,26 +15,11 @@ import { SimpleIncomeForm } from '@/components/forms/SimpleIncomeForm';
 import TimeIndicator from './TimeIndicator';
 import Footer from '@/components/ui/Footer';
 import Calendar from '@/components/calendar/Calendar';
-import { Spinner } from '@/components/ui/spinner';
 import TimelineView from '@/components/views/TimelineView';
 import CompactView from '@/components/views/CompactView';
 import HeatmapView from '@/components/views/HeatmapView';
 import KanbanView from '@/components/views/KanbanView';
 import TreemapView from '@/components/views/TreemapView';
-import { AppHeader } from '@/components/layout/AppHeader';
-
-// Lazy load des stats avec Web Worker pour ne pas bloquer le rendu
-const StatsPageWithWorker = dynamic(
-  () => import('@/components/stats/StatsPageWithWorker'),
-  {
-    loading: () => (
-      <div className="flex items-center justify-center py-20">
-        <Spinner size="lg" />
-      </div>
-    ),
-    ssr: false,
-  }
-);
 
 /**
  * Client Component pour le Dashboard
@@ -46,8 +30,6 @@ export function DashboardClient() {
   // Lire depuis le store Zustand
   const { items, calculation, deleteExpense, isLoading } = useExpensesStore();
 
-  const [mainTab, setMainTab] = useState<'dashboard' | 'stats'>('dashboard');
-  const [shouldLoadStats, setShouldLoadStats] = useState(false);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showCreditForm, setShowCreditForm] = useState(false);
@@ -55,13 +37,6 @@ export function DashboardClient() {
   const [editingItem, setEditingItem] = useState<MonthlyItem | undefined>();
   const [filter, setFilter] = useState<'all' | 'income' | 'expense' | 'credit' | 'non-credit'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'timeline' | 'compact' | 'heatmap' | 'kanban' | 'treemap'>('list');
-
-  const handleTabChange = (tab: 'dashboard' | 'stats') => {
-    setMainTab(tab);
-    if (tab === 'stats') {
-      setShouldLoadStats(true);
-    }
-  };
 
   const filteredItems = useMemo(() => {
     if (filter === 'all') return items;
@@ -135,13 +110,7 @@ export function DashboardClient() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Modern Header */}
-      <AppHeader currentTab={mainTab} onTabChange={handleTabChange} />
-
       <div className="container mx-auto px-4 sm:px-6 py-4 max-w-7xl">
-
-        {/* Dashboard Content */}
-        <div className={mainTab === 'dashboard' ? 'block' : 'hidden'}>
           {/* Action Buttons */}
           <div className="mb-6">
               {/* View Mode Selector */}
@@ -378,19 +347,6 @@ export function DashboardClient() {
                 <Calendar items={items} />
               )}
           </div>
-        </div>
-
-        {/* Stats Content */}
-        <div className={mainTab === 'stats' ? 'block' : 'hidden'}>
-          {shouldLoadStats && (
-            <StatsPageWithWorker
-              items={items}
-              totalIncome={calculation.totalIncome}
-              totalExpenses={calculation.totalExpenses}
-              remaining={calculation.remaining}
-            />
-          )}
-        </div>
 
         {/* Form Modals */}
         {showTypeSelector && (
