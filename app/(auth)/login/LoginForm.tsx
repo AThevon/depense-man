@@ -3,7 +3,6 @@
 import { useState, useTransition, useEffect } from 'react';
 import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
 import { login } from '@/lib/auth/actions';
@@ -59,15 +58,13 @@ export function LoginForm() {
       <CardHeader className="space-y-4">
         {/* Logo */}
         <div className="flex justify-center">
-          <div className="relative w-20 h-20">
-            <Image
-              src="/web-app-manifest-192x192.png"
-              alt="Dépense-Man Logo"
-              fill
-              className="rounded-2xl shadow-lg object-cover"
-              priority
-            />
-          </div>
+          <img
+            src="/web-app-manifest-192x192.png"
+            alt="Dépense-Man Logo"
+            width={80}
+            height={80}
+            className="rounded-2xl shadow-lg object-cover w-20 h-20"
+          />
         </div>
 
         {/* Title */}
