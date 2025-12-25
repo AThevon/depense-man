@@ -12,7 +12,7 @@ import { IncomeFormModal } from '@/components/forms/IncomeFormModal';
 import TimeIndicator from './TimeIndicator';
 import Footer from '@/components/ui/Footer';
 import Calendar from '@/components/calendar/Calendar';
-import StatsPage from '@/components/stats/StatsPage';
+import StatsPageOptimized from '@/components/stats/StatsPageOptimized';
 import TimelineView from '@/components/views/TimelineView';
 import CompactView from '@/components/views/CompactView';
 import HeatmapView from '@/components/views/HeatmapView';
@@ -397,7 +397,7 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
 
           {mainTab === 'stats' && (
             <TabsContent>
-              <StatsPage
+              <StatsPageOptimized
                 items={items}
                 totalIncome={calculation.totalIncome}
                 totalExpenses={calculation.totalExpenses}

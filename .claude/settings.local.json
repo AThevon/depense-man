@@ -17,7 +17,11 @@
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
       "Bash(kill:*)",
-      "Bash(git rebase --continue)"
+      "Bash(git rebase --continue)",
+      "Bash(killall:*)",
+      "Bash(git stash show:*)",
+      "Bash(git stash:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
