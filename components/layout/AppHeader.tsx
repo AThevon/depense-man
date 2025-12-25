@@ -3,14 +3,20 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LogOut, Settings, Moon, Sun, User } from 'lucide-react';
+import { LogOut, Settings, Moon, Sun, User, BarChart3, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/auth/actions';
 
-export function AppHeader() {
+interface AppHeaderProps {
+  currentTab?: 'dashboard' | 'stats';
+  onTabChange?: (tab: 'dashboard' | 'stats') => void;
+}
+
+export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderProps) {
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [localTab, setLocalTab] = useState(currentTab);
 
   // Charger la préférence de thème au montage
   useEffect(() => {
@@ -73,6 +79,44 @@ export function AppHeader() {
 
           {/* Navigation + Actions */}
           <div className="flex items-center space-x-2 sm:space-x-4">
+            {/* Navigation Tabs */}
+            <div className="flex bg-muted/50 rounded-lg p-1">
+              <Button
+                variant={localTab === 'dashboard' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Changement instantané local
+                  setLocalTab('dashboard');
+                  // Puis propagation
+                  requestAnimationFrame(() => {
+                    onTabChange?.('dashboard');
+                  });
+                }}
+                className="gap-2 transition-colors duration-75"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="hidden lg:inline">Dashboard</span>
+              </Button>
+              <Button
+                variant={localTab === 'stats' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Changement instantané local
+                  setLocalTab('stats');
+                  // Puis propagation
+                  requestAnimationFrame(() => {
+                    onTabChange?.('stats');
+                  });
+                }}
+                className="gap-2 transition-colors duration-75"
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden lg:inline">Statistiques</span>
+              </Button>
+            </div>
+
             {/* User Menu Dropdown */}
             <div className="relative">
               <Button

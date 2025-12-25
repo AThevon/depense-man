@@ -13,15 +13,7 @@ interface StatsPageProps {
 
 // Lazy load avec dynamic import (Next.js optimized)
 const StatsPageContent = dynamic(() => import('./StatsPage'), {
-  loading: () => (
-    <div className="space-y-6">
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="animate-pulse">
-          <div className="h-64 bg-muted/50 rounded-lg"></div>
-        </div>
-      ))}
-    </div>
-  ),
+  loading: () => null, // Pas de skeleton global, on gère ça dans chaque card
   ssr: false, // Pas de SSR pour les graphiques
 });
 

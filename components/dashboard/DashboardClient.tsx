@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useOptimistic } from 'react';
+import { useState, useMemo, useOptimistic, useTransition } from 'react';
+import dynamic from 'next/dynamic';
 import { Plus, TrendingUp, TrendingDown, DollarSign, CreditCard, Calendar as CalendarIcon, List, Columns, TableProperties, Grid3x3, Activity, LayoutGrid, BarChart3 } from 'lucide-react';
 import { MonthlyItem, MonthlyCalculation, getPayCyclePosition } from '@/lib/types';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -12,13 +13,26 @@ import { IncomeFormModal } from '@/components/forms/IncomeFormModal';
 import TimeIndicator from './TimeIndicator';
 import Footer from '@/components/ui/Footer';
 import Calendar from '@/components/calendar/Calendar';
-import StatsPageOptimized from '@/components/stats/StatsPageOptimized';
+import { Spinner } from '@/components/ui/spinner';
 import TimelineView from '@/components/views/TimelineView';
 import CompactView from '@/components/views/CompactView';
 import HeatmapView from '@/components/views/HeatmapView';
 import KanbanView from '@/components/views/KanbanView';
 import TreemapView from '@/components/views/TreemapView';
 import { AppHeader } from '@/components/layout/AppHeader';
+
+// Lazy load des stats avec Web Worker pour ne pas bloquer le rendu
+const StatsPageWithWorker = dynamic(
+  () => import('@/components/stats/StatsPageWithWorker'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center py-20">
+        <Spinner size="lg" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 interface DashboardClientProps {
   items: MonthlyItem[];
@@ -38,12 +52,23 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
   );
 
   const [mainTab, setMainTab] = useState<'dashboard' | 'stats'>('dashboard');
+  const [shouldLoadStats, setShouldLoadStats] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState<'income' | 'expense'>('expense');
   const [editingItem, setEditingItem] = useState<MonthlyItem | undefined>();
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'timeline' | 'compact' | 'heatmap' | 'kanban' | 'treemap'>('list');
   const [loading, setLoading] = useState(false);
+
+  const handleTabChange = (tab: 'dashboard' | 'stats') => {
+    // Changement instantané du bouton
+    setMainTab(tab);
+
+    // Charger les stats seulement si on clique dessus
+    if (tab === 'stats') {
+      setShouldLoadStats(true);
+    }
+  };
 
   // Utiliser les items optimistes
   const items = optimisticItems;
@@ -93,7 +118,7 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
   return (
     <div className="min-h-screen bg-background">
       {/* Modern Header */}
-      <AppHeader />
+      <AppHeader currentTab={mainTab} onTabChange={handleTabChange} />
 
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
 
@@ -177,29 +202,10 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
           </Card>
         </div>
 
-        {/* Main Tabs */}
-        <Tabs className="mb-6">
-          <TabsList className="w-full grid grid-cols-2 mb-6">
-            <TabsTrigger
-              active={mainTab === 'dashboard'}
-              onClick={() => setMainTab('dashboard')}
-            >
-              <Activity className="h-4 w-4 mr-2" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger
-              active={mainTab === 'stats'}
-              onClick={() => setMainTab('stats')}
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Statistiques
-            </TabsTrigger>
-          </TabsList>
-
-          {mainTab === 'dashboard' && (
-            <TabsContent>
-        {/* Action Buttons */}
-        <div className="mb-6">
+        {/* Dashboard Content */}
+        <div className={mainTab === 'dashboard' ? 'block' : 'hidden'}>
+          {/* Action Buttons */}
+          <div className="mb-6">
               <div className="flex flex-col sm:flex-row gap-2 mb-4">
                 <Button
                   variant="default"
@@ -391,21 +397,20 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
               ) : (
                 <Calendar items={items} />
               )}
+          </div>
         </div>
-            </TabsContent>
-          )}
 
-          {mainTab === 'stats' && (
-            <TabsContent>
-              <StatsPageOptimized
-                items={items}
-                totalIncome={calculation.totalIncome}
-                totalExpenses={calculation.totalExpenses}
-                remaining={calculation.remaining}
-              />
-            </TabsContent>
+        {/* Stats Content */}
+        <div className={mainTab === 'stats' ? 'block' : 'hidden'}>
+          {shouldLoadStats && (
+            <StatsPageWithWorker
+              items={items}
+              totalIncome={calculation.totalIncome}
+              totalExpenses={calculation.totalExpenses}
+              remaining={calculation.remaining}
+            />
           )}
-        </Tabs>
+        </div>
 
         {/* Form Modals */}
         {showForm && formType === 'expense' && (
