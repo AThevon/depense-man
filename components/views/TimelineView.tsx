@@ -7,6 +7,7 @@ import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
 import { Card } from '@/components/ui/card';
 import { CreditCard } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface TimelineViewProps {
   items: MonthlyItem[];
@@ -50,37 +51,55 @@ const TimelineView = ({ items, onEdit }: TimelineViewProps) => {
   return (
     <div className="space-y-6">
       {/* Timeline header */}
-      <div className="flex items-center space-x-4 overflow-x-auto pb-2">
+      <motion.div
+        className="flex items-center space-x-4 overflow-x-auto pb-2"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="flex-1 relative">
           <div className="h-1 bg-border rounded-full relative">
             {/* Ligne principale */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/50 to-primary/20 rounded-full" />
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/50 to-primary/20 rounded-full"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+            />
 
             {/* Indicateur aujourd'hui */}
-            <div
+            <motion.div
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
               style={{ left: `${((today - 29 + 30) % 30) / 30 * 100}%` }}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
             >
               <div className="w-4 h-4 bg-primary rounded-full border-4 border-background shadow-lg" />
               <div className="absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium text-primary">
                 Aujourd&apos;hui
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Marqueurs de jours */}
-          <div className="flex justify-between mt-8 text-xs text-muted-foreground">
+          <motion.div
+            className="flex justify-between mt-8 text-xs text-muted-foreground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             <span>29</span>
             <span>8</span>
             <span>18</span>
             <span>28</span>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Items en timeline */}
       <div className="space-y-3">
-        {sortedItems.map((item) => {
+        {sortedItems.map((item, index) => {
           const isExpense = item.type === 'expense';
           const expenseItem = isExpense ? item as MonthlyExpense : null;
           const isCredit = expenseItem?.isCredit || false;
@@ -98,10 +117,15 @@ const TimelineView = ({ items, onEdit }: TimelineViewProps) => {
           const barWidth = getBarWidth(displayAmount);
 
           return (
-            <div
+            <motion.div
               key={item.id}
               className="group relative"
               onClick={() => router.push(`/expense/${item.id}`)}
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               <Card className="p-4 cursor-pointer hover:shadow-lg transition-all">
                 <div className="flex items-center space-x-4">
@@ -137,11 +161,13 @@ const TimelineView = ({ items, onEdit }: TimelineViewProps) => {
 
                     {/* Barre de visualisation comparative des montants */}
                     <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-500 ${
+                      <motion.div
+                        className={`h-full ${
                           isExpense ? 'bg-destructive' : 'bg-success'
                         }`}
-                        style={{ width: `${barWidth}%` }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${barWidth}%` }}
+                        transition={{ delay: index * 0.1 + 0.3, duration: 0.6, ease: 'easeOut' }}
                       />
                     </div>
 
@@ -154,7 +180,7 @@ const TimelineView = ({ items, onEdit }: TimelineViewProps) => {
                   </div>
                 </div>
               </Card>
-            </div>
+            </motion.div>
           );
         })}
       </div>

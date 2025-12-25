@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LogOut, Settings, Moon, Sun, User, BarChart3, LayoutDashboard } from 'lucide-react';
+import { LogOut, Settings, Moon, Sun, User, BarChart3, LayoutDashboard, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/auth/actions';
 import { motion } from 'motion/react';
+import { useExpensesStore } from '@/lib/store/expenses';
 
 interface AppHeaderProps {
   currentTab?: 'dashboard' | 'stats';
@@ -15,9 +16,11 @@ interface AppHeaderProps {
 
 export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderProps) {
   const router = useRouter();
+  const { items } = useExpensesStore();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [localTab, setLocalTab] = useState(currentTab);
+  const [copied, setCopied] = useState(false);
 
   // Charger la préférence de thème au montage
   useEffect(() => {
@@ -51,12 +54,36 @@ export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderPr
     await logout();
   };
 
+  const handleCopyJSON = async () => {
+    try {
+      const json = JSON.stringify(items, null, 2);
+      await navigator.clipboard.writeText(json);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy JSON:', error);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo + Title */}
-          <div className="flex items-center space-x-3">
+          <motion.div
+            className="flex items-center space-x-3 cursor-pointer"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            onClick={(e) => {
+              e.preventDefault();
+              setLocalTab('dashboard');
+              requestAnimationFrame(() => {
+                onTabChange?.('dashboard');
+              });
+            }}
+          >
             <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
               <Image
                 src="/web-app-manifest-192x192.png"
@@ -71,12 +98,12 @@ export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderPr
               <h1 className="text-xl sm:text-2xl font-bold text-foreground font-display tracking-tight">
                 Dépense-Man
               </h1>
-              <p className="text-xs text-muted-foreground">Vers l'infini money</p>
+              <p className="text-xs text-muted-foreground">Vers &apos;l&apos;infini money</p>
             </div>
             <h1 className="sm:hidden text-xl font-bold text-foreground font-display">
               D-Man
             </h1>
-          </div>
+          </motion.div>
 
           {/* Navigation + Actions */}
           <div className="flex items-center space-x-2 sm:space-x-4">
@@ -90,11 +117,10 @@ export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderPr
                     onTabChange?.('dashboard');
                   });
                 }}
-                className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${
-                  localTab === 'dashboard'
+                className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${localTab === 'dashboard'
                     ? 'text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 {localTab === 'dashboard' && (
                   <motion.div
@@ -119,11 +145,10 @@ export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderPr
                     onTabChange?.('stats');
                   });
                 }}
-                className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${
-                  localTab === 'stats'
+                className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${localTab === 'stats'
                     ? 'text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 {localTab === 'stats' && (
                   <motion.div
@@ -159,7 +184,7 @@ export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderPr
                 <>
                   {/* Backdrop */}
                   <div
-                    className="fixed inset-0 z-40"
+                    className="fixed inset-0 z-50"
                     onClick={() => setIsDropdownOpen(false)}
                   />
 
@@ -181,6 +206,25 @@ export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderPr
                           <>
                             <Moon className="h-4 w-4" />
                             <span>Mode sombre</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* Copy JSON */}
+                      <button
+                        onClick={handleCopyJSON}
+                        className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted flex items-center gap-2"
+                        role="menuitem"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="h-4 w-4 text-success" />
+                            <span className="text-success">JSON copié!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4" />
+                            <span>Copier JSON</span>
                           </>
                         )}
                       </button>

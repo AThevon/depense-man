@@ -380,7 +380,6 @@ export function DashboardClient() {
           />
         )}
       </div>
-      <Footer items={items} calculation={calculation} />
     </div>
   );
 }

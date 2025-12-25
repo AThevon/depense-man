@@ -7,6 +7,7 @@ import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
 import { Card } from '@/components/ui/card';
 import { CreditCard } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface CompactViewProps {
   items: MonthlyItem[];
@@ -32,18 +33,28 @@ const CompactView = ({ items, onEdit }: CompactViewProps) => {
   };
 
   return (
-    <Card>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-muted/50 border-b border-border">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Jour</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Nom</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Type</th>
-              <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">Montant</th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-foreground">Crédit</th>
-            </tr>
-          </thead>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <Card>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <motion.thead
+              className="bg-muted/50 border-b border-border"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Jour</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Nom</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Type</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">Montant</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-foreground">Crédit</th>
+              </tr>
+            </motion.thead>
           <tbody>
             {sortedItems.map((item, index) => {
               const isExpense = item.type === 'expense';
@@ -61,12 +72,16 @@ const CompactView = ({ items, onEdit }: CompactViewProps) => {
               }
 
               return (
-                <tr
+                <motion.tr
                   key={item.id}
                   className={`border-b border-border hover:bg-muted/30 cursor-pointer transition-colors ${
                     index % 2 === 0 ? 'bg-card' : 'bg-muted/10'
                   }`}
                   onClick={() => router.push(`/expense/${item.id}`)}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 + 0.3, duration: 0.3 }}
+                  whileHover={{ backgroundColor: 'rgba(var(--muted-rgb, 0 0 0) / 0.3)' }}
                 >
                   {/* Jour */}
                   <td className="px-4 py-3">
@@ -114,13 +129,18 @@ const CompactView = ({ items, onEdit }: CompactViewProps) => {
                       <span className="text-muted-foreground text-xs">-</span>
                     )}
                   </td>
-                </tr>
+                </motion.tr>
               );
             })}
           </tbody>
 
           {/* Total row */}
-          <tfoot className="bg-muted/50 border-t-2 border-border">
+          <motion.tfoot
+            className="bg-muted/50 border-t-2 border-border"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: sortedItems.length * 0.05 + 0.5 }}
+          >
             <tr>
               <td colSpan={3} className="px-4 py-3 text-right font-semibold text-foreground">
                 Total mensuel:
@@ -149,10 +169,11 @@ const CompactView = ({ items, onEdit }: CompactViewProps) => {
               </td>
               <td />
             </tr>
-          </tfoot>
+          </motion.tfoot>
         </table>
       </div>
     </Card>
+    </motion.div>
   );
 };
 

@@ -6,6 +6,7 @@ import { MonthlyItem, MonthlyExpense} from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Card } from '@/components/ui/card';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface HeatmapViewProps {
   items: MonthlyItem[];
@@ -101,7 +102,12 @@ const HeatmapView = ({ items, onEdit }: HeatmapViewProps) => {
   return (
     <div className="space-y-6">
       {/* Légende */}
-      <Card className="p-4">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Card className="p-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -122,14 +128,21 @@ const HeatmapView = ({ items, onEdit }: HeatmapViewProps) => {
           </div>
         </div>
       </Card>
+      </motion.div>
 
       {/* Grille calendrier */}
       <div className="grid grid-cols-7 gap-2">
         {/* Headers jours de la semaine */}
-        {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(day => (
-          <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+        {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day, index) => (
+          <motion.div
+            key={day}
+            className="text-center text-sm font-medium text-muted-foreground py-2"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 + 0.2 }}
+          >
             {day}
-          </div>
+          </motion.div>
         ))}
 
         {/* Jours du mois */}
@@ -139,17 +152,24 @@ const HeatmapView = ({ items, onEdit }: HeatmapViewProps) => {
           const hasTransactions = data.items.length > 0;
 
           return (
-            <Card
+            <motion.div
               key={day}
-              className={`relative p-4 cursor-pointer hover:shadow-lg transition-all ${getBackgroundColor(day)} ${
-                isToday ? 'ring-2 ring-primary' : ''
-              }`}
-              onClick={() => {
-                if (data.items.length > 0) {
-                  router.push(`/expense/${data.items[0].id}`); // Naviguer vers le premier item du jour
-                }
-              }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: day * 0.02 + 0.3, duration: 0.3 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
+              <Card
+                className={`relative p-4 cursor-pointer hover:shadow-lg transition-all ${getBackgroundColor(day)} ${
+                  isToday ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => {
+                  if (data.items.length > 0) {
+                    router.push(`/expense/${data.items[0].id}`); // Naviguer vers le premier item du jour
+                  }
+                }}
+              >
               <div className="flex flex-col items-center justify-center min-h-[80px]">
                 {/* Numéro du jour */}
                 <div className={`text-2xl font-bold mb-2 ${hasTransactions ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -192,30 +212,49 @@ const HeatmapView = ({ items, onEdit }: HeatmapViewProps) => {
                 )}
               </div>
             </Card>
+            </motion.div>
           );
         })}
       </div>
 
       {/* Stats rapides */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-1">Jours avec revenus</div>
-          <div className="text-2xl font-bold text-success">
-            {Object.values(dayData).filter(d => d.income > 0).length}
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-1">Jours avec dépenses</div>
-          <div className="text-2xl font-bold text-destructive">
-            {Object.values(dayData).filter(d => d.expense > 0).length}
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-1">Jours sans transaction</div>
-          <div className="text-2xl font-bold text-muted-foreground">
-            {Object.values(dayData).filter(d => d.items.length === 0).length}
-          </div>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2, duration: 0.4 }}
+        >
+          <Card className="p-4">
+            <div className="text-sm text-muted-foreground mb-1">Jours avec revenus</div>
+            <div className="text-2xl font-bold text-success">
+              {Object.values(dayData).filter(d => d.income > 0).length}
+            </div>
+          </Card>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3, duration: 0.4 }}
+        >
+          <Card className="p-4">
+            <div className="text-sm text-muted-foreground mb-1">Jours avec dépenses</div>
+            <div className="text-2xl font-bold text-destructive">
+              {Object.values(dayData).filter(d => d.expense > 0).length}
+            </div>
+          </Card>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4, duration: 0.4 }}
+        >
+          <Card className="p-4">
+            <div className="text-sm text-muted-foreground mb-1">Jours sans transaction</div>
+            <div className="text-2xl font-bold text-muted-foreground">
+              {Object.values(dayData).filter(d => d.items.length === 0).length}
+            </div>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );

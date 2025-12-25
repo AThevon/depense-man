@@ -9,6 +9,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { CreditCard, TrendingUp, TrendingDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { motion } from 'motion/react';
 
 interface KanbanViewProps {
   items: MonthlyItem[];
@@ -103,8 +104,14 @@ const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
   return (
     <div className="overflow-x-auto pb-4 px-1">
       <div className="flex space-x-4 min-w-max py-1">
-        {cycles.map((cycle) => (
-          <div key={cycle.name} className="flex-shrink-0 w-[350px]">
+        {cycles.map((cycle, cycleIndex) => (
+          <motion.div
+            key={cycle.name}
+            className="flex-shrink-0 w-[350px]"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: cycleIndex * 0.2, duration: 0.5 }}
+          >
             <Card className={`h-full ${cycle.isCurrent ? 'outline-2 outline-primary' : ''}`}>
               <CardHeader>
                 <div className="space-y-3">
@@ -127,7 +134,12 @@ const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
 
                   {/* Summary cards */}
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-success/10 p-3 rounded-lg">
+                    <motion.div
+                      className="bg-success/10 p-3 rounded-lg"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: cycleIndex * 0.2 + 0.2 }}
+                    >
                       <div className="flex items-center space-x-2 mb-1">
                         <TrendingUp className="h-4 w-4 text-success" />
                         <span className="text-xs text-success font-medium">Revenus</span>
@@ -135,9 +147,14 @@ const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
                       <div className="text-lg font-bold text-success">
                         {formatAmount(cycle.totalIncome)}
                       </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="bg-destructive/10 p-3 rounded-lg">
+                    <motion.div
+                      className="bg-destructive/10 p-3 rounded-lg"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: cycleIndex * 0.2 + 0.3 }}
+                    >
                       <div className="flex items-center space-x-2 mb-1">
                         <TrendingDown className="h-4 w-4 text-destructive" />
                         <span className="text-xs text-destructive font-medium">Dépenses</span>
@@ -145,7 +162,7 @@ const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
                       <div className="text-lg font-bold text-destructive">
                         {formatAmount(cycle.totalExpenses)}
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
 
                   {/* Balance */}
@@ -165,17 +182,24 @@ const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
               <CardContent className="space-y-2 max-h-[500px] overflow-y-auto">
                 {cycle.items
                   .sort((a, b) => a.dayOfMonth - b.dayOfMonth)
-                  .map((item) => {
+                  .map((item, itemIndex) => {
                     const isExpense = item.type === 'expense';
                     const expenseItem = isExpense ? item as MonthlyExpense : null;
                     const isCredit = expenseItem?.isCredit || false;
 
                     return (
-                      <Card
+                      <motion.div
                         key={item.id}
-                        className="p-3 cursor-pointer hover:shadow-md transition-all"
-                        onClick={() => router.push(`/expense/${item.id}`)}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: cycleIndex * 0.2 + itemIndex * 0.05 + 0.4 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
+                        <Card
+                          className="p-3 cursor-pointer hover:shadow-md transition-all"
+                          onClick={() => router.push(`/expense/${item.id}`)}
+                        >
                         <div className="flex items-center space-x-3">
                           {/* Jour */}
                           <div className="flex-shrink-0 w-10 text-center">
@@ -212,6 +236,7 @@ const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
                           </div>
                         </div>
                       </Card>
+                      </motion.div>
                     );
                   })}
 
@@ -222,7 +247,7 @@ const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
                 )}
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

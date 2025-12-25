@@ -155,7 +155,7 @@ export const ExpenseDetailClient = ({ expenseId }: ExpenseDetailClientProps) => 
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="overflow-hidden border-2">
+          <Card className=" p-0 overflow-hidden border-2">
             <div
               className={`h-32 ${
                 isExpense

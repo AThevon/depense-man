@@ -2,10 +2,14 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { AppHeader } from './AppHeader';
+import Footer from '@/components/ui/Footer';
+import { useExpensesStore } from '@/lib/store/expenses';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const items = useExpensesStore((state) => state.items);
+  const calculation = useExpensesStore((state) => state.calculation);
 
   // Ne pas afficher le header sur la page de login uniquement
   const showHeader = !pathname.startsWith('/login');
@@ -25,6 +29,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <>
       {showHeader && <AppHeader currentTab={currentTab} onTabChange={handleTabChange} />}
       {children}
+      <Footer items={items} calculation={calculation} />
     </>
   );
 }

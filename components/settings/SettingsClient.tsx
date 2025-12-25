@@ -65,7 +65,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
+      <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur">
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -88,9 +88,9 @@ export function SettingsClient({ user }: SettingsClientProps) {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl">
+      <div className="container mx-auto px-4 sm:px-6 py-4 max-w-5xl">
         {/* Settings Navigation */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           {sections.map((section) => {
             const Icon = section.icon;
             return (

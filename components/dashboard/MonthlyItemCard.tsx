@@ -6,6 +6,7 @@ import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface MonthlyItemCardProps {
   item: MonthlyItem;
@@ -82,7 +83,13 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
   };
 
   return (
-    <div className="relative overflow-hidden">
+    <motion.div
+      className="relative overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -100 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+    >
       <Card className={`relative group p-0 ${isCredit ? 'bg-gradient-to-r from-card via-muted/30 to-card' : ''}`} 
             style={isCredit ? {
               backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 8px, oklch(from var(--muted) l c h / 0.3) 8px, oklch(from var(--muted) l c h / 0.3) 12px)',
@@ -222,34 +229,47 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
         </CardContent>
       </Card>
 
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-lg p-6 text-center space-y-4 shadow-xl border border-border">
-            <p className="text-sm text-foreground">
-              Supprimer &quot;{item.name}&quot; ?
-            </p>
-            <div className="flex space-x-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={loading}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleDelete}
-                disabled={loading}
-              >
-                Supprimer
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-card rounded-lg p-6 text-center space-y-4 shadow-xl border border-border"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            >
+              <p className="text-sm text-foreground">
+                Supprimer &quot;{item.name}&quot; ?
+              </p>
+              <div className="flex space-x-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={loading}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDelete}
+                  disabled={loading}
+                >
+                  Supprimer
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
