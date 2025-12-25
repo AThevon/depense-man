@@ -1,6 +1,6 @@
 import { adminDb } from '@/lib/firebase/admin';
 import { requireAuth } from '@/lib/auth/session';
-import { MonthlyItem } from '@/lib/types';
+import { MonthlyItem, MonthlyExpense } from '@/lib/types';
 
 /**
  * Server Query pour récupérer toutes les dépenses et revenus de l'utilisateur
@@ -124,11 +124,14 @@ export async function getIncomesOnly(): Promise<MonthlyItem[]> {
 /**
  * Server Query pour récupérer les crédits actifs
  */
-export async function getActiveCredits(): Promise<MonthlyItem[]> {
+export async function getActiveCredits(): Promise<MonthlyExpense[]> {
   const items = await getExpenses();
   const now = new Date();
 
-  return items.filter(item => {
+  return items.filter((item): item is MonthlyExpense => {
+    if (item.type !== 'expense') {
+      return false;
+    }
     if (!item.isCredit || !item.creditStartDate || !item.creditDuration) {
       return false;
     }

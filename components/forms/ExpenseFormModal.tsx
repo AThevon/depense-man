@@ -6,7 +6,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { MonthlyItem } from '@/lib/types';
+import { MonthlyItem, MonthlyExpense } from '@/lib/types';
 import IconSelector from '@/components/ui/IconSelector';
 
 interface ExpenseFormModalProps {
@@ -25,10 +25,11 @@ export function ExpenseFormModal({ item, onSuccess, onCancel }: ExpenseFormModal
 
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     action,
-    null
+    {}
   );
 
-  const [isCredit, setIsCredit] = useState(item?.isCredit || false);
+  const expenseItem = item?.type === 'expense' ? item : null;
+  const [isCredit, setIsCredit] = useState(expenseItem?.isCredit || false);
   const [selectedIcon, setSelectedIcon] = useState(item?.icon || '');
 
   // Quand le state indique un succès, appeler onSuccess
@@ -157,7 +158,7 @@ export function ExpenseFormModal({ item, onSuccess, onCancel }: ExpenseFormModal
                     type="number"
                     step="0.01"
                     placeholder="Ex: 1200"
-                    defaultValue={item?.totalCreditAmount}
+                    defaultValue={expenseItem?.totalCreditAmount}
                     required={isCredit}
                     disabled={isPending}
                   />
@@ -172,8 +173,8 @@ export function ExpenseFormModal({ item, onSuccess, onCancel }: ExpenseFormModal
                     name="creditStartDate"
                     type="date"
                     defaultValue={
-                      item?.creditStartDate
-                        ? new Date(item.creditStartDate).toISOString().split('T')[0]
+                      expenseItem?.creditStartDate
+                        ? new Date(expenseItem.creditStartDate).toISOString().split('T')[0]
                         : ''
                     }
                     required={isCredit}
@@ -191,7 +192,7 @@ export function ExpenseFormModal({ item, onSuccess, onCancel }: ExpenseFormModal
                     type="number"
                     min="1"
                     placeholder="Ex: 24"
-                    defaultValue={item?.creditDuration}
+                    defaultValue={expenseItem?.creditDuration}
                     required={isCredit}
                     disabled={isPending}
                   />

@@ -137,7 +137,7 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
               ) : (
                 <>
                   <div className="text-3xl font-bold text-foreground">
-                    {formatAmount(workerData.dailyVelocity)}
+                    {workerData ? formatAmount(workerData.dailyVelocity) : '...'}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">par jour</p>
                 </>
@@ -158,7 +158,7 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
               ) : (
                 <>
                   <div className="text-3xl font-bold text-foreground">
-                    {workerData.runway.toFixed(1)}
+                    {workerData ? workerData.runway.toFixed(1) : '...'}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">mois d&apos;autonomie</p>
                 </>
@@ -193,6 +193,16 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
             </div>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (!workerData) {
+    return (
+      <div className="space-y-6 pb-6">
+        <div className="flex items-center justify-center py-20">
+          <Spinner size="lg" />
+        </div>
       </div>
     );
   }
@@ -333,8 +343,10 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
               ]}
               theme={{
                 background: 'transparent',
-                textColor: '#e5e7eb',
-                fontSize: 11,
+                text: {
+                  fill: '#e5e7eb',
+                  fontSize: 11
+                },
                 axis: {
                   domain: {
                     line: {
@@ -423,8 +435,10 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
               areaOpacity={0.15}
               theme={{
                 background: 'transparent',
-                textColor: '#e5e7eb',
-                fontSize: 11,
+                text: {
+                  fill: '#e5e7eb',
+                  fontSize: 11
+                },
                 axis: {
                   domain: {
                     line: {
@@ -505,8 +519,10 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
                 arcLabelsTextColor="#ffffff"
                 theme={{
                   background: 'transparent',
-                  textColor: '#e5e7eb',
-                  fontSize: 11,
+                  text: {
+                    fill: '#e5e7eb',
+                    fontSize: 11
+                  },
                   tooltip: {
                     container: {
                       background: 'hsl(var(--card))',

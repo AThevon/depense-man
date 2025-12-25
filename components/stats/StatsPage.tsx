@@ -461,8 +461,10 @@ const StatsPage = ({ items, totalIncome, totalExpenses, remaining }: StatsPagePr
               ]}
               theme={{
                 background: 'transparent',
-                textColor: '#e5e7eb',
-                fontSize: 11,
+                text: {
+                  fill: '#e5e7eb',
+                  fontSize: 11
+                },
                 axis: {
                   domain: {
                     line: {
@@ -557,8 +559,10 @@ const StatsPage = ({ items, totalIncome, totalExpenses, remaining }: StatsPagePr
               areaOpacity={0.15}
               theme={{
                 background: 'transparent',
-                textColor: '#e5e7eb',
-                fontSize: 11,
+                text: {
+                  fill: '#e5e7eb',
+                  fontSize: 11
+                },
                 axis: {
                   domain: {
                     line: {
@@ -645,8 +649,10 @@ const StatsPage = ({ items, totalIncome, totalExpenses, remaining }: StatsPagePr
                 arcLabelsTextColor="#ffffff"
                 theme={{
                   background: 'transparent',
-                  textColor: '#e5e7eb',
-                  fontSize: 11,
+                  text: {
+                    fill: '#e5e7eb',
+                    fontSize: 11
+                  },
                   tooltip: {
                     container: {
                       background: 'hsl(var(--card))',

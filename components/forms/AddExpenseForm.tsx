@@ -15,7 +15,7 @@ interface AddExpenseFormProps {
 export function AddExpenseForm({ onSuccess, onCancel }: AddExpenseFormProps) {
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     addExpense,
-    null
+    {}
   );
 
   const [isCredit, setIsCredit] = useState(false);

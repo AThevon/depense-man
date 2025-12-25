@@ -25,7 +25,7 @@ export function IncomeFormModal({ item, onSuccess, onCancel }: IncomeFormModalPr
 
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     action,
-    null
+    {}
   );
 
   const [selectedIcon, setSelectedIcon] = useState(item?.icon || '');

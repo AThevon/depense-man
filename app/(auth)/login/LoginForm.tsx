@@ -18,7 +18,7 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
 
   // ✅ PATTERN 2025: useActionState pour gérer le server action
-  const [state, formAction, isPending] = useActionState(login, null);
+  const [state, formAction, isPending] = useActionState(login, {});
   const [isAuthenticating, startTransition] = useTransition();
 
   const isLoading = isPending || isAuthenticating;
