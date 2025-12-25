@@ -40,8 +40,22 @@ export async function getExpenses(): Promise<MonthlyItem[]> {
       });
     });
 
-    // 4. Trier par jour du mois (comme dans useMonthlyItems)
-    items.sort((a, b) => a.dayOfMonth - b.dayOfMonth);
+    // 4. Trier par cycle de paye (du 29 au 28)
+    // Le cycle commence le 29 (jour de paye) et se termine le 28
+    const sortByPayCycle = (a: MonthlyItem, b: MonthlyItem) => {
+      const getPayCyclePosition = (day: number) => {
+        // Jours 29, 30, 31 viennent en premier (début du cycle)
+        if (day >= 29) {
+          return day - 29; // 29 -> 0, 30 -> 1, 31 -> 2
+        }
+        // Jours 1-28 viennent après (fin du cycle)
+        return day + 3; // 1 -> 4, 2 -> 5, ..., 28 -> 31
+      };
+
+      return getPayCyclePosition(a.dayOfMonth) - getPayCyclePosition(b.dayOfMonth);
+    };
+
+    items.sort(sortByPayCycle);
 
     return items;
   } catch (error) {
