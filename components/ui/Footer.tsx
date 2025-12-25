@@ -48,7 +48,7 @@ const Footer = ({ items, calculation }: FooterProps) => {
   };
 
   return (
-    <footer className="mt-12 py-8 px-4 text-center text-sm text-muted-foreground border-t border-border">
+    <footer className="mt-4 py-8 px-4 text-center text-sm text-muted-foreground border-t border-border">
       <div className="space-y-4">
         <h3>Dépense-Man</h3>
         {items && (

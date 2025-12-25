@@ -1,0 +1,24 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Fonction helper pour vérifier si l'utilisateur est autorisé
+    function isAuthorizedUser() {
+      return request.auth != null &&
+             request.auth.token.email == 'YOUR_EMAIL_HERE'; // Remplace par ton email
+    }
+
+    // Règles pour les utilisateurs
+    match /users/{userId} {
+      // Permettre la lecture/écriture seulement si c'est le propre compte de l'utilisateur
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Règles pour les items mensuels (expenses/incomes)
+      match /monthlyItems/{itemId} {
+        // Permettre toutes les opérations (read, write, delete, update)
+        // si l'utilisateur authentifié correspond au userId parent
+        allow read, write, delete, update: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

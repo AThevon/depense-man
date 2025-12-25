@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
+import { StoreInitializer } from "@/components/providers/StoreInitializer";
 import "./globals.css";
 
 // Font pour headers, titres, boutons (moderne et géométrique)
@@ -81,7 +82,9 @@ export default function RootLayout({
         <link rel="mask-icon" href="/web-app-manifest-192x192.png" color="#232323" />
       </head>
       <body className={`${fontDisplay.variable} ${fontBody.variable} font-body antialiased`}>
-        {children}
+        <StoreInitializer>
+          {children}
+        </StoreInitializer>
         <script
           dangerouslySetInnerHTML={{
             __html: `

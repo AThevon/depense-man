@@ -25,7 +25,8 @@
       "Bash(chmod:*)",
       "Bash(./generate-icons.sh:*)",
       "Bash(sips:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": []
   }

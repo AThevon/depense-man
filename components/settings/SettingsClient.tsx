@@ -76,7 +76,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 className="gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Retour
               </Button>
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-foreground">Paramètres</h1>

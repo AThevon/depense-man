@@ -1,18 +1,24 @@
 'use client';
 
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useMemo, Suspense, startTransition } from 'react';
 import dynamic from 'next/dynamic';
-import { MonthlyItem } from '@/lib/types';
+import { MonthlyItem, MonthlyExpense } from '@/lib/types';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { Icon } from '@/components/ui/Icon';
 import { Spinner } from '@/components/ui/spinner';
+import { motion } from 'motion/react';
 import {
   Zap,
   Target,
   Calendar,
   AlertTriangle,
   Sparkles,
-  Flame
+  Flame,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  CreditCard
 } from 'lucide-react';
 import type { StatsWorkerOutput } from '@/lib/workers/stats.worker';
 
@@ -33,50 +39,321 @@ const COLORS = ['#10b981', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'
 let cachedData: StatsWorkerOutput | null = null;
 let cachedKey = '';
 
+// Composant mémoïsé pour le graphique des prédictions
+const PredictionsChart = memo(({ predictions }: { predictions: Array<{ month: string; revenus: number; dépenses: number; solde: number }> }) => (
+  <div style={{ height: 300 }}>
+    <ResponsiveLine
+      data={[
+        {
+          id: 'revenus',
+          data: predictions.map(p => ({ x: p.month, y: p.revenus }))
+        },
+        {
+          id: 'dépenses',
+          data: predictions.map(p => ({ x: p.month, y: p.dépenses }))
+        },
+        {
+          id: 'solde',
+          data: predictions.map(p => ({ x: p.month, y: p.solde }))
+        }
+      ]}
+      margin={{ top: 20, right: 110, bottom: 50, left: 60 }}
+      xScale={{ type: 'point' }}
+      yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
+      axisBottom={{
+        tickSize: 5,
+        tickPadding: 5,
+        tickRotation: -45,
+        legendOffset: 36,
+        legendPosition: 'middle'
+      }}
+      axisLeft={{
+        tickSize: 5,
+        tickPadding: 5,
+        tickRotation: 0,
+        format: (value) => `${value}€`,
+        legendOffset: -40,
+        legendPosition: 'middle'
+      }}
+      colors={['#10b981', '#ef4444', '#3b82f6']}
+      pointSize={8}
+      pointColor={{ theme: 'background' }}
+      pointBorderWidth={2}
+      pointBorderColor={{ from: 'serieColor' }}
+      useMesh={true}
+      enableArea={true}
+      areaOpacity={0.1}
+      legends={[
+        {
+          anchor: 'bottom-right',
+          direction: 'column',
+          justify: false,
+          translateX: 100,
+          translateY: 0,
+          itemsSpacing: 0,
+          itemDirection: 'left-to-right',
+          itemWidth: 80,
+          itemHeight: 20,
+          itemOpacity: 0.75,
+          symbolSize: 12,
+          symbolShape: 'circle'
+        }
+      ]}
+      theme={{
+        background: 'transparent',
+        text: {
+          fill: '#e5e7eb',
+          fontSize: 11
+        },
+        axis: {
+          domain: {
+            line: {
+              stroke: '#444444',
+              strokeWidth: 1
+            }
+          },
+          ticks: {
+            line: {
+              stroke: '#444444',
+              strokeWidth: 1
+            },
+            text: {
+              fill: '#e5e7eb'
+            }
+          }
+        },
+        grid: {
+          line: {
+            stroke: '#333333',
+            strokeWidth: 1
+          }
+        },
+        legends: {
+          text: {
+            fill: '#e5e7eb'
+          }
+        },
+        tooltip: {
+          container: {
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--foreground))',
+            fontSize: 12,
+            borderRadius: '8px',
+            border: '1px solid hsl(var(--border))'
+          }
+        }
+      }}
+    />
+  </div>
+));
+PredictionsChart.displayName = 'PredictionsChart';
+
+// Composant mémoïsé pour le graphique Cash Flow
+const CashFlowChart = memo(({ cashFlowData }: { cashFlowData: Array<{ day: string; income: number; expense: number; balance: number }> }) => (
+  <div style={{ height: 300 }}>
+    <ResponsiveLine
+      data={[
+        {
+          id: 'solde',
+          data: cashFlowData.map(d => ({ x: d.day, y: d.balance }))
+        }
+      ]}
+      margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
+      xScale={{ type: 'point' }}
+      yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
+      axisBottom={{
+        tickSize: 5,
+        tickPadding: 5,
+        tickRotation: 0,
+        legendOffset: 36,
+        legendPosition: 'middle'
+      }}
+      axisLeft={{
+        tickSize: 5,
+        tickPadding: 5,
+        tickRotation: 0,
+        format: (value) => `${value}€`,
+        legendOffset: -40,
+        legendPosition: 'middle'
+      }}
+      colors={['#3b82f6']}
+      pointSize={6}
+      pointColor={{ theme: 'background' }}
+      pointBorderWidth={2}
+      pointBorderColor={{ from: 'serieColor' }}
+      useMesh={true}
+      enableArea={true}
+      areaOpacity={0.15}
+      theme={{
+        background: 'transparent',
+        text: {
+          fill: '#e5e7eb',
+          fontSize: 11
+        },
+        axis: {
+          domain: {
+            line: {
+              stroke: '#444444',
+              strokeWidth: 1
+            }
+          },
+          ticks: {
+            line: {
+              stroke: '#444444',
+              strokeWidth: 1
+            },
+            text: {
+              fill: '#e5e7eb'
+            }
+          }
+        },
+        grid: {
+          line: {
+            stroke: '#333333',
+            strokeWidth: 1
+          }
+        },
+        tooltip: {
+          container: {
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--foreground))',
+            fontSize: 12,
+            borderRadius: '8px',
+            border: '1px solid hsl(var(--border))'
+          }
+        }
+      }}
+    />
+  </div>
+));
+CashFlowChart.displayName = 'CashFlowChart';
+
+// Composant mémoïsé pour le pie chart de distribution
+const ExpensesPieChart = memo(({ expensesByIcon }: { expensesByIcon: Array<{ name: string; value: number; icon: string }> }) => (
+  <div style={{ height: 300 }}>
+    <ResponsivePie
+      data={expensesByIcon.map((item, index) => ({
+        id: item.name,
+        label: item.name,
+        value: item.value,
+        color: COLORS[index % COLORS.length]
+      }))}
+      margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+      innerRadius={0.5}
+      padAngle={0.7}
+      cornerRadius={3}
+      activeOuterRadiusOffset={8}
+      colors={{ datum: 'data.color' }}
+      borderWidth={1}
+      borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
+      arcLinkLabelsSkipAngle={10}
+      arcLinkLabelsTextColor="#e5e7eb"
+      arcLinkLabelsThickness={2}
+      arcLinkLabelsColor={{ from: 'color' }}
+      arcLabelsSkipAngle={10}
+      arcLabelsTextColor="#ffffff"
+      theme={{
+        background: 'transparent',
+        text: {
+          fill: '#e5e7eb',
+          fontSize: 11
+        },
+        tooltip: {
+          container: {
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--foreground))',
+            fontSize: 12,
+            borderRadius: '8px',
+            border: '1px solid hsl(var(--border))'
+          }
+        }
+      }}
+    />
+  </div>
+));
+ExpensesPieChart.displayName = 'ExpensesPieChart';
+
 const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: StatsPageProps) => {
   const [includeCredits, setIncludeCredits] = useState(true);
   const [workerData, setWorkerData] = useState<StatsWorkerOutput | null>(cachedData);
-  const [isLoading, setIsLoading] = useState(cachedData === null);
+  const [visibleSections, setVisibleSections] = useState<number[]>([]);
+
+  // Créer un identifiant stable pour détecter les changements
+  const itemsKey = useMemo(() =>
+    items.map(i => `${i.id}-${i.amount}`).join(','),
+    [items]
+  );
 
   useEffect(() => {
-    // Créer une clé unique pour le cache
-    const cacheKey = `${items.length}-${totalIncome}-${totalExpenses}-${remaining}-${includeCredits}`;
+    // Créer une clé unique pour le cache (sans includeCredits)
+    const cacheKey = `${itemsKey}-${totalIncome}-${totalExpenses}-${remaining}`;
 
     // Si les données sont déjà en cache, pas besoin de recalculer
     if (cachedKey === cacheKey && cachedData) {
-      setWorkerData(cachedData);
-      setIsLoading(false);
+      startTransition(() => {
+        setWorkerData(cachedData);
+      });
       return;
     }
-
-    setIsLoading(true);
 
     const worker = new Worker(new URL('@/lib/workers/stats.worker.ts', import.meta.url), {
       type: 'module'
     });
 
-    worker.postMessage({ items, totalIncome, totalExpenses, remaining, includeCredits });
+    // Toujours inclure les crédits dans le calcul du worker
+    worker.postMessage({ items, totalIncome, totalExpenses, remaining, includeCredits: true });
 
     worker.onmessage = (e: MessageEvent<StatsWorkerOutput>) => {
       // Mettre en cache
       cachedData = e.data;
       cachedKey = cacheKey;
 
-      setWorkerData(e.data);
-      setIsLoading(false);
+      // Utiliser startTransition pour ne pas bloquer l'UI
+      startTransition(() => {
+        setWorkerData(e.data);
+      });
       worker.terminate();
     };
 
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      setIsLoading(false);
       worker.terminate();
     };
 
     return () => {
       worker.terminate();
     };
-  }, [items, totalIncome, totalExpenses, remaining, includeCredits]);
+  }, [items, itemsKey, totalIncome, totalExpenses, remaining]);
+
+  // Filtrer les données du pie chart côté client selon le toggle
+  const pieChartData = useMemo(() => {
+    if (!workerData) return [];
+    if (includeCredits) return workerData.expensesByIcon;
+
+    // Filtrer les crédits manuellement
+    return workerData.expensesByIcon.filter(expense => {
+      const item = items.find(i => i.name === expense.name && i.type === 'expense') as MonthlyExpense | undefined;
+      return !item?.isCredit;
+    });
+  }, [workerData, includeCredits, items]);
+
+  // Monter progressivement les sections quand les données sont prêtes
+  useEffect(() => {
+    if (!workerData) {
+      setVisibleSections([]);
+      return;
+    }
+
+    // Reset et monter progressivement les sections
+    setVisibleSections([]);
+    const sections = [0, 1, 2, 3, 4, 5]; // Cards, Predictions, CashFlow, Distribution, Critical, Others
+
+    sections.forEach((section, index) => {
+      setTimeout(() => {
+        setVisibleSections(prev => [...prev, section]);
+      }, section === 0 ? 0 : 400 + (index - 1) * 150); // Cards instantanées puis 150ms entre les autres
+    });
+  }, [workerData]);
 
   // Calcul du score de santé financière (léger, pas besoin du worker)
   const healthScore = totalIncome === 0 ? 0 : Math.round(Math.max(0, Math.min(100, (remaining / totalIncome) * 100)));
@@ -102,439 +379,185 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
     return 'À améliorer';
   };
 
-  if (isLoading || !workerData) {
-    return (
-      <div className="space-y-6 pb-6">
-        {/* Scores - affichage immédiat */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-foreground">Santé financière</h3>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-3xl font-bold ${getHealthColor(healthScore)}`}>
-                {healthScore}/100
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                {getHealthLabel(healthScore)}
-              </p>
-            </CardContent>
-          </Card>
+  const getRemainingColor = (remaining: number) => {
+    if (remaining > 0) return 'text-success';
+    if (remaining < 0) return 'text-destructive';
+    return 'text-primary';
+  };
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Zap className="h-4 w-4 text-warning" />
-                <h3 className="font-semibold text-foreground">Vélocité</h3>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Spinner size="sm" />
-              ) : (
-                <>
-                  <div className="text-3xl font-bold text-foreground">
-                    {workerData ? formatAmount(workerData.dailyVelocity) : '...'}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">par jour</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Target className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-foreground">Runway</h3>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Spinner size="sm" />
-              ) : (
-                <>
-                  <div className="text-3xl font-bold text-foreground">
-                    {workerData ? workerData.runway.toFixed(1) : '...'}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">mois d&apos;autonomie</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Flame className="h-4 w-4 text-destructive" />
-                <h3 className="font-semibold text-foreground">Burn Rate</h3>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-destructive">
-                {formatAmount(totalExpenses)}
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">par mois</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Placeholders pour les graphiques */}
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold text-foreground">Chargement des statistiques...</h3>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center py-20">
-              <Spinner size="lg" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!workerData) {
-    return (
-      <div className="space-y-6 pb-6">
-        <div className="flex items-center justify-center py-20">
-          <Spinner size="lg" />
-        </div>
-      </div>
-    );
-  }
+  const metricCards = [
+    { icon: TrendingUp, iconColor: 'text-success', title: 'Revenus', value: formatAmount(totalIncome), valueColor: 'text-success', subtitle: 'Total mensuel' },
+    { icon: TrendingDown, iconColor: 'text-destructive', title: 'Dépenses', value: formatAmount(totalExpenses), valueColor: 'text-destructive', subtitle: 'Total mensuel' },
+    { icon: DollarSign, iconColor: 'text-primary', title: 'Solde', value: formatAmount(remaining), valueColor: getRemainingColor(remaining), subtitle: 'Après dépenses' },
+    { icon: CreditCard, iconColor: 'text-primary', title: 'Crédits', value: workerData?.creditTimeline.filter(c => c.isActive).length || 0, valueColor: 'text-primary', subtitle: 'En cours' },
+    { icon: Sparkles, iconColor: 'text-primary', title: 'Santé financière', value: `${healthScore}/100`, valueColor: getHealthColor(healthScore), subtitle: getHealthLabel(healthScore) },
+    { icon: Zap, iconColor: 'text-warning', title: 'Vélocité', value: workerData ? formatAmount(workerData.dailyVelocity) : null, valueColor: 'text-foreground', subtitle: 'par jour' },
+    { icon: Target, iconColor: 'text-primary', title: 'Runway', value: workerData ? workerData.runway.toFixed(1) : null, valueColor: 'text-foreground', subtitle: 'mois d\'autonomie' },
+    { icon: Flame, iconColor: 'text-destructive', title: 'Burn Rate', value: formatAmount(totalExpenses), valueColor: 'text-destructive', subtitle: 'par mois' },
+  ];
 
   return (
-    <div className="space-y-6 pb-6">
-      {/* Scores et métriques principales */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-foreground">Santé financière</h3>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-3xl font-bold ${getHealthColor(healthScore)}`}>
-              {healthScore}/100
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {getHealthLabel(healthScore)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Zap className="h-4 w-4 text-warning" />
-              <h3 className="font-semibold text-foreground">Vélocité</h3>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">
-              {formatAmount(workerData.dailyVelocity)}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">par jour</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Target className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-foreground">Runway</h3>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">
-              {workerData.runway.toFixed(1)}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">mois d&apos;autonomie</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Flame className="h-4 w-4 text-destructive" />
-              <h3 className="font-semibold text-foreground">Burn Rate</h3>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-destructive">
-              {formatAmount(totalExpenses)}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">par mois</p>
-          </CardContent>
-        </Card>
+    <div className="space-y-4 pb-4 min-h-screen">
+      {/* Métriques principales */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
+        {metricCards.map((card, index) => {
+          const Icon = card.icon;
+          return visibleSections.includes(0) ? (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{
+                duration: 0.3,
+                delay: index * 0.05,
+                ease: [0.16, 1, 0.3, 1]
+              }}
+              className="flex"
+            >
+              <Card className="flex flex-col flex-1">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center space-x-2">
+                    <Icon className={`h-4 w-4 ${card.iconColor}`} />
+                    <h3 className="font-semibold text-sm">{card.title}</h3>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col justify-between">
+                  {card.value === null ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <>
+                      <div className={`text-2xl font-bold ${card.valueColor}`}>
+                        {card.value}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{card.subtitle}</p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          ) : null;
+        })}
       </div>
 
       {/* Prédictions 12 mois */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold text-foreground">Prédictions 12 mois</h3>
-          <p className="text-sm text-muted-foreground">
-            Projection incluant les fins de crédits
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div style={{ height: 300 }}>
-            <ResponsiveLine
-              data={[
-                {
-                  id: 'revenus',
-                  data: workerData.predictions.map(p => ({ x: p.month, y: p.revenus }))
-                },
-                {
-                  id: 'dépenses',
-                  data: workerData.predictions.map(p => ({ x: p.month, y: p.dépenses }))
-                },
-                {
-                  id: 'solde',
-                  data: workerData.predictions.map(p => ({ x: p.month, y: p.solde }))
-                }
-              ]}
-              margin={{ top: 20, right: 110, bottom: 50, left: 60 }}
-              xScale={{ type: 'point' }}
-              yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
-              axisBottom={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: -45,
-                legendOffset: 36,
-                legendPosition: 'middle'
-              }}
-              axisLeft={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                format: (value) => `${value}€`,
-                legendOffset: -40,
-                legendPosition: 'middle'
-              }}
-              colors={['#10b981', '#ef4444', '#3b82f6']}
-              pointSize={8}
-              pointColor={{ theme: 'background' }}
-              pointBorderWidth={2}
-              pointBorderColor={{ from: 'serieColor' }}
-              useMesh={true}
-              enableArea={true}
-              areaOpacity={0.1}
-              legends={[
-                {
-                  anchor: 'bottom-right',
-                  direction: 'column',
-                  justify: false,
-                  translateX: 100,
-                  translateY: 0,
-                  itemsSpacing: 0,
-                  itemDirection: 'left-to-right',
-                  itemWidth: 80,
-                  itemHeight: 20,
-                  itemOpacity: 0.75,
-                  symbolSize: 12,
-                  symbolShape: 'circle'
-                }
-              ]}
-              theme={{
-                background: 'transparent',
-                text: {
-                  fill: '#e5e7eb',
-                  fontSize: 11
-                },
-                axis: {
-                  domain: {
-                    line: {
-                      stroke: '#444444',
-                      strokeWidth: 1
-                    }
-                  },
-                  ticks: {
-                    line: {
-                      stroke: '#444444',
-                      strokeWidth: 1
-                    },
-                    text: {
-                      fill: '#e5e7eb'
-                    }
-                  }
-                },
-                grid: {
-                  line: {
-                    stroke: '#333333',
-                    strokeWidth: 1
-                  }
-                },
-                legends: {
-                  text: {
-                    fill: '#e5e7eb'
-                  }
-                },
-                tooltip: {
-                  container: {
-                    background: 'hsl(var(--card))',
-                    color: 'hsl(var(--foreground))',
-                    fontSize: 12,
-                    borderRadius: '8px',
-                    border: '1px solid hsl(var(--border))'
-                  }
-                }
-              }}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      {visibleSections.includes(1) && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{
+            duration: 0.4,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+        >
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold text-foreground">Prédictions 12 mois</h3>
+              {workerData && (
+                <p className="text-sm text-muted-foreground">
+                  Projection incluant les fins de crédits
+                </p>
+              )}
+            </CardHeader>
+            <CardContent>
+              {!workerData ? (
+                <div className="flex items-center justify-center py-20">
+                  <Spinner size="lg" />
+                </div>
+              ) : (
+                <Suspense fallback={
+                  <div className="flex items-center justify-center py-20">
+                    <Spinner size="lg" />
+                  </div>
+                }>
+                  <PredictionsChart predictions={workerData.predictions} />
+                </Suspense>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Cash Flow quotidien */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold text-foreground">Cash Flow mensuel</h3>
-          <p className="text-sm text-muted-foreground">
-            Évolution du solde jour par jour
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div style={{ height: 300 }}>
-            <ResponsiveLine
-              data={[
-                {
-                  id: 'solde',
-                  data: workerData.cashFlowData.map(d => ({ x: d.day, y: d.balance }))
-                }
-              ]}
-              margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
-              xScale={{ type: 'point' }}
-              yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
-              axisBottom={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legendOffset: 36,
-                legendPosition: 'middle'
-              }}
-              axisLeft={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                format: (value) => `${value}€`,
-                legendOffset: -40,
-                legendPosition: 'middle'
-              }}
-              colors={['#3b82f6']}
-              pointSize={6}
-              pointColor={{ theme: 'background' }}
-              pointBorderWidth={2}
-              pointBorderColor={{ from: 'serieColor' }}
-              useMesh={true}
-              enableArea={true}
-              areaOpacity={0.15}
-              theme={{
-                background: 'transparent',
-                text: {
-                  fill: '#e5e7eb',
-                  fontSize: 11
-                },
-                axis: {
-                  domain: {
-                    line: {
-                      stroke: '#444444',
-                      strokeWidth: 1
-                    }
-                  },
-                  ticks: {
-                    line: {
-                      stroke: '#444444',
-                      strokeWidth: 1
-                    },
-                    text: {
-                      fill: '#e5e7eb'
-                    }
-                  }
-                },
-                grid: {
-                  line: {
-                    stroke: '#333333',
-                    strokeWidth: 1
-                  }
-                },
-                tooltip: {
-                  container: {
-                    background: 'hsl(var(--card))',
-                    color: 'hsl(var(--foreground))',
-                    fontSize: 12,
-                    borderRadius: '8px',
-                    border: '1px solid hsl(var(--border))'
-                  }
-                }
-              }}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      {visibleSections.includes(2) && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{
+            duration: 0.4,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+        >
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold text-foreground">Cash Flow mensuel</h3>
+              {workerData && (
+                <p className="text-sm text-muted-foreground">
+                  Évolution du solde jour par jour
+                </p>
+              )}
+            </CardHeader>
+            <CardContent>
+              {!workerData ? (
+                <div className="flex items-center justify-center py-20">
+                  <Spinner size="lg" />
+                </div>
+              ) : (
+                <Suspense fallback={
+                  <div className="flex items-center justify-center py-20">
+                    <Spinner size="lg" />
+                  </div>
+                }>
+                  <CashFlowChart cashFlowData={workerData.cashFlowData} />
+                </Suspense>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Distribution et Top 5 */}
-      <div className="grid lg:grid-cols-2 gap-4">
+      {visibleSections.includes(3) && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{
+            duration: 0.4,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+          className="grid lg:grid-cols-2 gap-4"
+        >
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            {workerData ? (
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-foreground">Distribution des dépenses</h3>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <span className="text-sm text-muted-foreground">Inclure crédits</span>
+                  <Switch
+                    checked={includeCredits}
+                    onCheckedChange={setIncludeCredits}
+                  />
+                </label>
+              </div>
+            ) : (
               <h3 className="text-lg font-semibold text-foreground">Distribution des dépenses</h3>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <span className="text-sm text-muted-foreground">Inclure crédits</span>
-                <input
-                  type="checkbox"
-                  checked={includeCredits}
-                  onChange={(e) => setIncludeCredits(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                />
-              </label>
-            </div>
+            )}
           </CardHeader>
           <CardContent>
-            <div style={{ height: 300 }}>
-              <ResponsivePie
-                data={workerData.expensesByIcon.map((item, index) => ({
-                  id: item.name,
-                  label: item.name,
-                  value: item.value,
-                  color: COLORS[index % COLORS.length]
-                }))}
-                margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
-                innerRadius={0.5}
-                padAngle={0.7}
-                cornerRadius={3}
-                activeOuterRadiusOffset={8}
-                colors={{ datum: 'data.color' }}
-                borderWidth={1}
-                borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
-                arcLinkLabelsSkipAngle={10}
-                arcLinkLabelsTextColor="#e5e7eb"
-                arcLinkLabelsThickness={2}
-                arcLinkLabelsColor={{ from: 'color' }}
-                arcLabelsSkipAngle={10}
-                arcLabelsTextColor="#ffffff"
-                theme={{
-                  background: 'transparent',
-                  text: {
-                    fill: '#e5e7eb',
-                    fontSize: 11
-                  },
-                  tooltip: {
-                    container: {
-                      background: 'hsl(var(--card))',
-                      color: 'hsl(var(--foreground))',
-                      fontSize: 12,
-                      borderRadius: '8px',
-                      border: '1px solid hsl(var(--border))'
-                    }
-                  }
-                }}
-              />
-            </div>
+            {!workerData ? (
+              <div className="flex items-center justify-center py-20">
+                <Spinner size="lg" />
+              </div>
+            ) : (
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-20">
+                  <Spinner size="lg" />
+                </div>
+              }>
+                <ExpensesPieChart expensesByIcon={pieChartData} />
+              </Suspense>
+            )}
           </CardContent>
         </Card>
 
@@ -543,40 +566,56 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
             <h3 className="text-lg font-semibold text-foreground">Top 5 dépenses</h3>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {workerData.topExpenses.map((expense, index) => (
-                <div key={expense.name} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    />
-                    <span className="font-medium">{expense.name}</span>
+            {!workerData ? (
+              <div className="flex items-center justify-center py-20">
+                <Spinner size="lg" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {workerData.topExpenses.map((expense, index) => (
+                  <div key={expense.name} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span className="font-medium">{expense.name}</span>
+                    </div>
+                    <span className="text-destructive font-semibold">
+                      {formatAmount(expense.value)}
+                    </span>
                   </div>
-                  <span className="text-destructive font-semibold">
-                    {formatAmount(expense.value)}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
-      </div>
+        </motion.div>
+      )}
 
       {/* Jours critiques */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="h-5 w-5 text-warning" />
-            <h3 className="text-lg font-semibold text-foreground">Jours critiques</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Jours avec le plus de dépenses
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-5 gap-4">
-            {workerData.criticalDays.map((critical) => (
+      {visibleSections.includes(4) && workerData && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{
+            duration: 0.4,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+        >
+        <Card>
+          <CardHeader>
+            <div className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              <h3 className="text-lg font-semibold text-foreground">Jours critiques</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Jours avec le plus de dépenses
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-5 gap-4">
+              {workerData.criticalDays.map((critical) => (
               <div
                 key={critical.day}
                 className="flex flex-col items-center justify-center p-4 bg-destructive/10 rounded-lg border border-destructive/20"
@@ -590,12 +629,22 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
                 </div>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+        </motion.div>
+      )}
 
       {/* Petites dépenses récurrentes */}
-      {workerData.smallRecurringExpenses.length > 0 && (
+      {visibleSections.includes(5) && workerData && workerData.smallRecurringExpenses.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{
+            duration: 0.4,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+        >
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -639,10 +688,19 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       )}
 
       {/* Timeline des crédits */}
-      {workerData.creditTimeline.length > 0 && (
+      {visibleSections.includes(5) && workerData && workerData.creditTimeline.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{
+            duration: 0.4,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+        >
         <Card>
           <CardHeader>
             <h3 className="text-lg font-semibold text-foreground">Timeline des crédits</h3>
@@ -684,6 +742,7 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { LogOut, Settings, Moon, Sun, User, BarChart3, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/auth/actions';
+import { motion } from 'motion/react';
 
 interface AppHeaderProps {
   currentTab?: 'dashboard' | 'stats';
@@ -70,7 +71,7 @@ export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderPr
               <h1 className="text-xl sm:text-2xl font-bold text-foreground font-display tracking-tight">
                 Dépense-Man
               </h1>
-              <p className="text-xs text-muted-foreground">Gérez vos finances</p>
+              <p className="text-xs text-muted-foreground">Vers l'infini money</p>
             </div>
             <h1 className="sm:hidden text-xl font-bold text-foreground font-display">
               D-Man
@@ -80,41 +81,65 @@ export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderPr
           {/* Navigation + Actions */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Navigation Tabs */}
-            <div className="flex bg-muted/50 rounded-lg p-1">
-              <Button
-                variant={localTab === 'dashboard' ? 'default' : 'ghost'}
-                size="sm"
+            <div className="relative flex bg-muted/50 rounded-lg p-1 gap-1">
+              <button
                 onClick={(e) => {
                   e.preventDefault();
-                  // Changement instantané local
                   setLocalTab('dashboard');
-                  // Puis propagation
                   requestAnimationFrame(() => {
                     onTabChange?.('dashboard');
                   });
                 }}
-                className="gap-2 transition-colors duration-75"
+                className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${
+                  localTab === 'dashboard'
+                    ? 'text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                <LayoutDashboard className="h-4 w-4" />
-                <span className="hidden lg:inline">Dashboard</span>
-              </Button>
-              <Button
-                variant={localTab === 'stats' ? 'default' : 'ghost'}
-                size="sm"
+                {localTab === 'dashboard' && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-primary rounded-md"
+                    transition={{
+                      type: 'spring',
+                      stiffness: 500,
+                      damping: 35,
+                      mass: 0.8,
+                    }}
+                  />
+                )}
+                <LayoutDashboard className="h-4 w-4 relative z-10" />
+                <span className="hidden lg:inline relative z-10">Dashboard</span>
+              </button>
+              <button
                 onClick={(e) => {
                   e.preventDefault();
-                  // Changement instantané local
                   setLocalTab('stats');
-                  // Puis propagation
                   requestAnimationFrame(() => {
                     onTabChange?.('stats');
                   });
                 }}
-                className="gap-2 transition-colors duration-75"
+                className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${
+                  localTab === 'stats'
+                    ? 'text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                <BarChart3 className="h-4 w-4" />
-                <span className="hidden lg:inline">Statistiques</span>
-              </Button>
+                {localTab === 'stats' && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-primary rounded-md"
+                    transition={{
+                      type: 'spring',
+                      stiffness: 500,
+                      damping: 35,
+                      mass: 0.8,
+                    }}
+                  />
+                )}
+                <BarChart3 className="h-4 w-4 relative z-10" />
+                <span className="hidden lg:inline relative z-10">Statistiques</span>
+              </button>
             </div>
 
             {/* User Menu Dropdown */}

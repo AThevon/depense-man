@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { MonthlyItem, MonthlyExpense} from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
@@ -15,6 +16,7 @@ interface KanbanViewProps {
 }
 
 const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
+  const router = useRouter();
   // Générer 3 cycles de paye (actuel + 2 suivants)
   const cycles = useMemo(() => {
     const today = new Date();
@@ -99,11 +101,11 @@ const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
   };
 
   return (
-    <div className="overflow-x-auto pb-4">
-      <div className="flex space-x-4 min-w-max">
+    <div className="overflow-x-auto pb-4 px-1">
+      <div className="flex space-x-4 min-w-max py-1">
         {cycles.map((cycle) => (
           <div key={cycle.name} className="flex-shrink-0 w-[350px]">
-            <Card className={`h-full ${cycle.isCurrent ? 'ring-2 ring-primary' : ''}`}>
+            <Card className={`h-full ${cycle.isCurrent ? 'outline-2 outline-primary' : ''}`}>
               <CardHeader>
                 <div className="space-y-3">
                   {/* Titre du cycle */}
@@ -172,7 +174,7 @@ const KanbanView = ({ items, onEdit }: KanbanViewProps) => {
                       <Card
                         key={item.id}
                         className="p-3 cursor-pointer hover:shadow-md transition-all"
-                        onClick={() => onEdit(item)}
+                        onClick={() => router.push(`/expense/${item.id}`)}
                       >
                         <div className="flex items-center space-x-3">
                           {/* Jour */}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { MonthlyItem, MonthlyExpense} from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Card } from '@/components/ui/card';
@@ -12,6 +13,7 @@ interface HeatmapViewProps {
 }
 
 const HeatmapView = ({ items, onEdit }: HeatmapViewProps) => {
+  const router = useRouter();
   // Calculer les montants par jour
   const dayData = useMemo(() => {
     const data: Record<number, { income: number; expense: number; balance: number; items: MonthlyItem[] }> = {};
@@ -144,7 +146,7 @@ const HeatmapView = ({ items, onEdit }: HeatmapViewProps) => {
               }`}
               onClick={() => {
                 if (data.items.length > 0) {
-                  onEdit(data.items[0]); // Editer le premier item du jour
+                  router.push(`/expense/${data.items[0].id}`); // Naviguer vers le premier item du jour
                 }
               }}
             >

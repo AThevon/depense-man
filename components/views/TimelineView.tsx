@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { MonthlyItem, MonthlyExpense, getPayCyclePosition } from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
@@ -13,6 +14,7 @@ interface TimelineViewProps {
 }
 
 const TimelineView = ({ items, onEdit }: TimelineViewProps) => {
+  const router = useRouter();
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
       const posA = getPayCyclePosition(a.dayOfMonth);
@@ -99,7 +101,7 @@ const TimelineView = ({ items, onEdit }: TimelineViewProps) => {
             <div
               key={item.id}
               className="group relative"
-              onClick={() => onEdit(item)}
+              onClick={() => router.push(`/expense/${item.id}`)}
             >
               <Card className="p-4 cursor-pointer hover:shadow-lg transition-all">
                 <div className="flex items-center space-x-4">

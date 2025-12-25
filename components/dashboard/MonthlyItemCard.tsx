@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Edit3, Trash2, Calendar, CreditCard } from 'lucide-react';
 import { MonthlyItem, MonthlyExpense} from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
@@ -14,6 +15,7 @@ interface MonthlyItemCardProps {
 }
 
 const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyItemCardProps) => {
+  const router = useRouter();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [startX, setStartX] = useState(0);
   const [currentX, setCurrentX] = useState(0);
@@ -69,6 +71,16 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
     setCurrentX(0);
   };
 
+  const handleCardClick = () => {
+    if (currentX > 0) {
+      // Si swiped, juste reset le swipe
+      resetSwipe();
+    } else {
+      // Sinon, naviguer vers la page de détail
+      router.push(`/expense/${item.id}`);
+    }
+  };
+
   return (
     <div className="relative overflow-hidden">
       <Card className={`relative group p-0 ${isCredit ? 'bg-gradient-to-r from-card via-muted/30 to-card' : ''}`} 
@@ -86,7 +98,8 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               onEdit(item);
               resetSwipe();
             }}
@@ -98,7 +111,8 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowDeleteConfirm(true);
               resetSwipe();
             }}
@@ -109,16 +123,16 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
           </Button>
         </div>
 
-        <CardContent 
+        <CardContent
           ref={cardRef}
-          className="p-4 relative z-10 cursor-pointer select-none sm:cursor-auto"
+          className="p-4 relative z-10 cursor-pointer select-none"
           style={{
             transform: `translateX(-${currentX}px)`
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onClick={resetSwipe}
+          onClick={handleCardClick}
         >
           <div className="flex items-center justify-between gap-3">
           <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -155,7 +169,10 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onEdit(item)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(item);
+                }}
                 disabled={loading}
                 className="h-8 w-8 p-0"
               >
@@ -164,7 +181,10 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowDeleteConfirm(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteConfirm(true);
+                }}
                 disabled={loading}
                 className="h-8 w-8 p-0 text-destructive hover:text-destructive"
               >

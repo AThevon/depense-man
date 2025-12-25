@@ -1,10 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { MonthlyItem, MonthlyExpense} from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
 import { CreditCard } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface TreemapViewProps {
   items: MonthlyItem[];
@@ -77,6 +79,15 @@ const squarify = (data: Array<{ item: MonthlyItem; amount: number }>, x: number,
 };
 
 const TreemapView = ({ items, onEdit }: TreemapViewProps) => {
+  const router = useRouter();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Trigger animation on mount
+    const timer = setTimeout(() => setIsVisible(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
+
   const treemapData = useMemo(() => {
     // Préparer les données avec montants - uniquement les dépenses
     const processedItems = items
@@ -134,12 +145,17 @@ const TreemapView = ({ items, onEdit }: TreemapViewProps) => {
   return (
     <div className="space-y-4">
       {/* Info */}
-      <div className="text-center">
+      <motion.div
+        className="text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      >
         <h3 className="text-lg font-semibold text-foreground mb-2">Vue Proportionnelle des Dépenses</h3>
         <p className="text-sm text-muted-foreground">
           La taille de chaque bloc représente la proportion de la dépense dans votre budget mensuel
         </p>
-      </div>
+      </motion.div>
 
       {/* Treemap Grid */}
       <div
@@ -149,14 +165,14 @@ const TreemapView = ({ items, onEdit }: TreemapViewProps) => {
           minHeight: '500px'
         }}
       >
-        {treemapData.map((node) => {
+        {treemapData.map((node, index) => {
           const expenseItem = node.item as MonthlyExpense;
           const isCredit = expenseItem?.isCredit || false;
 
           return (
-            <div
+            <motion.div
               key={node.item.id}
-              className={`absolute transition-all duration-300 cursor-pointer group hover:opacity-90 hover:scale-[0.98] ${getColorForItem(node.percentage)}`}
+              className={`absolute cursor-pointer group ${getColorForItem(node.percentage)}`}
               style={{
                 left: `${node.x}%`,
                 top: `${node.y}%`,
@@ -164,74 +180,72 @@ const TreemapView = ({ items, onEdit }: TreemapViewProps) => {
                 height: `${node.height}%`,
                 border: '2px solid hsl(var(--background))',
               }}
-              onClick={() => onEdit(node.item)}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+              transition={{
+                duration: 0.4,
+                delay: index * 0.05,
+                ease: [0.16, 1, 0.3, 1]
+              }}
+              whileHover={{ scale: 0.98, opacity: 0.9 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push(`/expense/${node.item.id}`)}
             >
-              <div className="absolute inset-0 p-2 sm:p-4 flex flex-col items-center justify-center text-center overflow-hidden">
-                {/* Icône */}
-                {node.percentage > 3 && (
-                  <div className="mb-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <Icon
-                      name={node.item.icon}
-                      className={`${
-                        node.percentage > 15 ? 'h-12 w-12' :
-                        node.percentage > 10 ? 'h-10 w-10' :
-                        node.percentage > 5 ? 'h-8 w-8' :
-                        'h-6 w-6'
-                      } text-foreground drop-shadow-md`}
-                    />
-                  </div>
-                )}
+              <div className="absolute inset-0 p-1 sm:p-2 flex items-center justify-center overflow-hidden">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  {/* Icône */}
+                  <Icon
+                    name={node.item.icon}
+                    className={`${
+                      node.percentage > 15 ? 'h-8 w-8 sm:h-12 sm:w-12' :
+                      node.percentage > 10 ? 'h-6 w-6 sm:h-10 sm:w-10' :
+                      node.percentage > 5 ? 'h-5 w-5 sm:h-8 sm:w-8' :
+                      node.percentage > 2 ? 'h-4 w-4 sm:h-6 sm:w-6' :
+                      'h-3 w-3 sm:h-4 sm:w-4'
+                    } text-foreground drop-shadow-lg flex-shrink-0`}
+                  />
 
-                {/* Nom */}
-                <div
-                  className={`font-bold text-foreground drop-shadow-md ${getTextSize(node.percentage)} leading-tight mb-1 line-clamp-2`}
-                >
-                  {node.item.name}
+                  {/* Montant */}
+                  {node.percentage > 1 && (
+                    <div
+                      className={`font-bold text-foreground drop-shadow-lg whitespace-nowrap ${
+                        node.percentage > 15 ? 'text-lg sm:text-2xl' :
+                        node.percentage > 10 ? 'text-base sm:text-xl' :
+                        node.percentage > 5 ? 'text-sm sm:text-lg' :
+                        node.percentage > 2 ? 'text-xs sm:text-base' :
+                        'text-[10px] sm:text-sm'
+                      }`}
+                    >
+                      {formatAmount(node.amount)}
+                    </div>
+                  )}
                 </div>
 
-                {/* Montant */}
-                <div
-                  className={`font-bold text-foreground drop-shadow-md ${
-                    node.percentage > 10 ? 'text-xl' :
-                    node.percentage > 5 ? 'text-lg' :
-                    node.percentage > 2 ? 'text-base' :
-                    'text-sm'
-                  }`}
-                >
-                  -{formatAmount(node.amount)}
-                </div>
-
-                {/* Pourcentage */}
-                {node.percentage > 2 && (
-                  <div className="text-xs font-medium text-foreground/80 mt-1">
-                    {node.percentage.toFixed(1)}%
-                  </div>
-                )}
-
-                {/* Badge crédit */}
-                {isCredit && node.percentage > 5 && (
-                  <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground rounded-full p-1.5">
-                    <CreditCard className="h-3 w-3" />
-                  </div>
-                )}
-
-                {/* Jour */}
-                {node.percentage > 3 && (
-                  <div className="absolute bottom-2 left-2 bg-background/80 text-foreground rounded px-2 py-1 text-xs font-semibold">
-                    Le {node.item.dayOfMonth}
+                {/* Badge crédit - coin supérieur */}
+                {isCredit && node.percentage > 3 && (
+                  <div className="absolute top-1 right-1 bg-primary/90 text-primary-foreground rounded-full p-1">
+                    <CreditCard className="h-2 w-2 sm:h-3 sm:w-3" />
                   </div>
                 )}
               </div>
 
-              {/* Overlay hover */}
-              <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-colors pointer-events-none" />
-            </div>
+              {/* Overlay hover avec effet brillant */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-foreground/0 via-foreground/5 to-foreground/0 pointer-events-none opacity-0 group-hover:opacity-100"
+                transition={{ duration: 0.3 }}
+              />
+            </motion.div>
           );
         })}
       </div>
 
       {/* Légende */}
-      <div className="flex items-center justify-center flex-wrap gap-4 text-sm">
+      <motion.div
+        className="flex items-center justify-center flex-wrap gap-4 text-sm"
+        initial={{ opacity: 0, y: 20 }}
+        animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      >
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-destructive rounded" />
           <span className="text-muted-foreground">&gt; 20% du budget</span>
@@ -248,7 +262,7 @@ const TreemapView = ({ items, onEdit }: TreemapViewProps) => {
           <div className="w-4 h-4 bg-destructive/40 rounded" />
           <span className="text-muted-foreground">&lt; 5% du budget</span>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

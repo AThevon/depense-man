@@ -1,15 +1,18 @@
 'use client';
 
-import { useState, useMemo, useOptimistic, useTransition } from 'react';
+import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { Plus, TrendingUp, TrendingDown, DollarSign, CreditCard, Calendar as CalendarIcon, List, Columns, TableProperties, Grid3x3, Activity, LayoutGrid, BarChart3 } from 'lucide-react';
-import { MonthlyItem, MonthlyCalculation, getPayCyclePosition } from '@/lib/types';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Plus, Calendar as CalendarIcon, List, Columns, TableProperties, Grid3x3, Activity, LayoutGrid } from 'lucide-react';
+import { MonthlyItem, MonthlyExpense, getPayCyclePosition } from '@/lib/types';
+import { useExpensesStore } from '@/lib/store/expenses';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { motion } from 'motion/react';
 import MonthlyItemCard from './MonthlyItemCard';
-import { ExpenseFormModal } from '@/components/forms/ExpenseFormModal';
-import { IncomeFormModal } from '@/components/forms/IncomeFormModal';
+import { ItemTypeSelector } from '@/components/forms/ItemTypeSelector';
+import { SimpleExpenseForm } from '@/components/forms/SimpleExpenseForm';
+import { CreditExpenseForm } from '@/components/forms/CreditExpenseForm';
+import { SimpleIncomeForm } from '@/components/forms/SimpleIncomeForm';
 import TimeIndicator from './TimeIndicator';
 import Footer from '@/components/ui/Footer';
 import Calendar from '@/components/calendar/Calendar';
@@ -34,85 +37,100 @@ const StatsPageWithWorker = dynamic(
   }
 );
 
-interface DashboardClientProps {
-  items: MonthlyItem[];
-  calculation: MonthlyCalculation;
-}
-
 /**
  * Client Component pour le Dashboard
- * Reçoit les données depuis le Server Component parent
- * Gère uniquement l'interactivité (state, modals, etc.)
+ * Lit les données depuis le store Zustand global
+ * Gère l'interactivité (state, modals, mutations)
  */
-export function DashboardClient({ items: initialItems, calculation: initialCalculation }: DashboardClientProps) {
-  // Optimistic UI - mise à jour instantanée avant la confirmation serveur
-  const [optimisticItems, addOptimisticItem] = useOptimistic(
-    initialItems,
-    (state, newItem: MonthlyItem) => [...state, newItem]
-  );
+export function DashboardClient() {
+  // Lire depuis le store Zustand
+  const { items, calculation, deleteExpense, isLoading } = useExpensesStore();
 
   const [mainTab, setMainTab] = useState<'dashboard' | 'stats'>('dashboard');
   const [shouldLoadStats, setShouldLoadStats] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [formType, setFormType] = useState<'income' | 'expense'>('expense');
+  const [showTypeSelector, setShowTypeSelector] = useState(false);
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [showCreditForm, setShowCreditForm] = useState(false);
+  const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [editingItem, setEditingItem] = useState<MonthlyItem | undefined>();
-  const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
+  const [filter, setFilter] = useState<'all' | 'income' | 'expense' | 'credit' | 'non-credit'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'timeline' | 'compact' | 'heatmap' | 'kanban' | 'treemap'>('list');
-  const [loading, setLoading] = useState(false);
 
   const handleTabChange = (tab: 'dashboard' | 'stats') => {
-    // Changement instantané du bouton
     setMainTab(tab);
-
-    // Charger les stats seulement si on clique dessus
     if (tab === 'stats') {
       setShouldLoadStats(true);
     }
   };
 
-  // Utiliser les items optimistes
-  const items = optimisticItems;
-  const calculation = initialCalculation; // TODO: recalculer avec optimisticItems
-
   const filteredItems = useMemo(() => {
     if (filter === 'all') return items;
-    return items.filter(item => item.type === filter);
+    if (filter === 'income') return items.filter(item => item.type === 'income');
+    if (filter === 'expense') return items.filter(item => item.type === 'expense');
+    if (filter === 'credit') return items.filter(item => {
+      if (item.type !== 'expense') return false;
+      return (item as MonthlyExpense).isCredit === true;
+    });
+    if (filter === 'non-credit') return items.filter(item => {
+      if (item.type !== 'expense') return false;
+      return (item as MonthlyExpense).isCredit !== true;
+    });
+    return items;
   }, [items, filter]);
 
-  const handleAddItem = (type: 'income' | 'expense') => {
-    setFormType(type);
+  const handleAddItem = () => {
     setEditingItem(undefined);
-    setShowForm(true);
+    setShowTypeSelector(true);
+  };
+
+  const handleTypeSelect = (type: 'expense' | 'credit' | 'income') => {
+    setShowTypeSelector(false);
+    if (type === 'expense') {
+      setShowExpenseForm(true);
+    } else if (type === 'credit') {
+      setShowCreditForm(true);
+    } else {
+      setShowIncomeForm(true);
+    }
   };
 
   const handleEditItem = (item: MonthlyItem) => {
-    setFormType(item.type);
     setEditingItem(item);
-    setShowForm(true);
+    if (item.type === 'income') {
+      setShowIncomeForm(true);
+    } else {
+      // Check if it's a credit
+      const expenseItem = item as MonthlyExpense;
+      if (expenseItem.isCredit) {
+        setShowCreditForm(true);
+      } else {
+        setShowExpenseForm(true);
+      }
+    }
   };
 
   const handleFormSuccess = () => {
-    setShowForm(false);
+    setShowTypeSelector(false);
+    setShowExpenseForm(false);
+    setShowCreditForm(false);
+    setShowIncomeForm(false);
     setEditingItem(undefined);
-    // Les données seront automatiquement mises à jour via revalidatePath()
+  };
+
+  const handleFormCancel = () => {
+    setShowTypeSelector(false);
+    setShowExpenseForm(false);
+    setShowCreditForm(false);
+    setShowIncomeForm(false);
+    setEditingItem(undefined);
   };
 
   const handleDeleteItem = async (id: string) => {
-    // TODO: Implémenter delete avec Server Action + useOptimistic
-    console.log('Delete item:', id);
-  };
-
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
-  };
-
-  const getRemainingColor = (remaining: number) => {
-    if (remaining > 0) return 'text-success';
-    if (remaining < 0) return 'text-destructive';
-    return 'text-primary';
+    try {
+      await deleteExpense(id);
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
   };
 
   return (
@@ -120,213 +138,175 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
       {/* Modern Header */}
       <AppHeader currentTab={mainTab} onTabChange={handleTabChange} />
 
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2 mb-4 sm:mb-6">
-          <Card className="flex flex-col h-full">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4 text-success" />
-                <div>
-                  <h3 className="font-semibold">Revenus</h3>
-                  <p className="text-sm text-muted-foreground">Total mensuel</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="mt-auto">
-              <div className="text-lg md:text-3xl font-bold text-success">
-                {formatAmount(calculation.totalIncome)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="flex flex-col h-full">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <TrendingDown className="h-4 w-4 text-destructive" />
-                <div>
-                  <h3 className="font-semibold">Dépenses</h3>
-                  <p className="text-sm text-muted-foreground">Total mensuel</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="mt-auto">
-              <div className="text-lg md:text-3xl font-bold text-destructive">
-                {formatAmount(calculation.totalExpenses)}
-              </div>
-              <div className="text-xs md:text-sm text-muted-foreground mt-1 md:mt-2">
-                {formatAmount(calculation.remainingThisMonth)} restant ce mois
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="flex flex-col h-full">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <DollarSign className="h-4 w-4 text-primary" />
-                <div>
-                  <h3 className="font-semibold">Solde</h3>
-                  <p className="text-sm text-muted-foreground">Après dépenses</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="mt-auto">
-              <div className={`text-lg md:text-3xl font-bold ${getRemainingColor(calculation.remaining)}`}>
-                {formatAmount(calculation.remaining)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="flex flex-col h-full">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <CreditCard className="h-4 w-4 text-primary" />
-                <div>
-                  <h3 className="font-semibold">Crédits</h3>
-                  <p className="text-sm text-muted-foreground">En cours</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="mt-auto">
-              <div className="text-lg md:text-3xl font-bold text-primary">
-                {calculation.activeCredits.count}
-              </div>
-              <div className="text-xs md:text-sm text-muted-foreground mt-1 md:mt-2">
-                {formatAmount(calculation.activeCredits.totalMonthly)}/mois
-              </div>
-              <div className="text-xs text-muted-foreground mt-1 ">
-                {formatAmount(calculation.activeCredits.totalRemaining)} restant
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="container mx-auto px-4 sm:px-6 py-4 max-w-7xl">
 
         {/* Dashboard Content */}
         <div className={mainTab === 'dashboard' ? 'block' : 'hidden'}>
           {/* Action Buttons */}
           <div className="mb-6">
-              <div className="flex flex-col sm:flex-row gap-2 mb-4">
-                <Button
-                  variant="default"
-                  onClick={() => handleAddItem('expense')}
-                  size="lg"
-                  className="flex-1 justify-center py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nouvelle dépense
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleAddItem('income')}
-                  size="lg"
-                  className="flex-1 justify-center py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-base font-semibold"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nouveau revenu
-                </Button>
-              </div>
-
               {/* View Mode Selector */}
               <div className="mb-4 overflow-x-auto">
-                <div className="flex bg-muted border border-border rounded-lg p-1 min-w-max">
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
+                <div className="relative flex bg-muted border border-border rounded-lg p-1 min-w-max gap-1">
+                  <button
                     onClick={() => setViewMode('list')}
-                    className="rounded-md !px-3"
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                      viewMode === 'list' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <List className="h-4 w-4 mr-1" />
-                    Liste
-                  </Button>
-                  <Button
-                    variant={viewMode === 'timeline' ? 'default' : 'ghost'}
-                    size="sm"
+                    {viewMode === 'list' && (
+                      <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <List className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">Liste</span>
+                  </button>
+                  <button
                     onClick={() => setViewMode('timeline')}
-                    className="rounded-md !px-3"
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                      viewMode === 'timeline' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <Activity className="h-4 w-4 mr-1" />
-                    Timeline
-                  </Button>
-                  <Button
-                    variant={viewMode === 'compact' ? 'default' : 'ghost'}
-                    size="sm"
+                    {viewMode === 'timeline' && (
+                      <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <Activity className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">Timeline</span>
+                  </button>
+                  <button
                     onClick={() => setViewMode('compact')}
-                    className="rounded-md !px-3"
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                      viewMode === 'compact' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <TableProperties className="h-4 w-4 mr-1" />
-                    Compact
-                  </Button>
-                  <Button
-                    variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-                    size="sm"
+                    {viewMode === 'compact' && (
+                      <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <TableProperties className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">Compact</span>
+                  </button>
+                  <button
                     onClick={() => setViewMode('kanban')}
-                    className="rounded-md !px-3"
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                      viewMode === 'kanban' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <Columns className="h-4 w-4 mr-1" />
-                    Kanban
-                  </Button>
-                  <Button
-                    variant={viewMode === 'heatmap' ? 'default' : 'ghost'}
-                    size="sm"
+                    {viewMode === 'kanban' && (
+                      <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <Columns className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">Kanban</span>
+                  </button>
+                  <button
                     onClick={() => setViewMode('heatmap')}
-                    className="rounded-md !px-3"
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                      viewMode === 'heatmap' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <Grid3x3 className="h-4 w-4 mr-1" />
-                    Heatmap
-                  </Button>
-                  <Button
-                    variant={viewMode === 'treemap' ? 'default' : 'ghost'}
-                    size="sm"
+                    {viewMode === 'heatmap' && (
+                      <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <Grid3x3 className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">Heatmap</span>
+                  </button>
+                  <button
                     onClick={() => setViewMode('treemap')}
-                    className="rounded-md !px-3"
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                      viewMode === 'treemap' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <LayoutGrid className="h-4 w-4 mr-1" />
-                    Treemap
-                  </Button>
-                  <Button
-                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-                    size="sm"
+                    {viewMode === 'treemap' && (
+                      <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <LayoutGrid className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">Treemap</span>
+                  </button>
+                  <button
                     onClick={() => setViewMode('calendar')}
-                    className="rounded-md !px-3"
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                      viewMode === 'calendar' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <CalendarIcon className="h-4 w-4 mr-1" />
-                    Calendrier
-                  </Button>
+                    {viewMode === 'calendar' && (
+                      <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <CalendarIcon className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">Calendrier</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Filters (only for list view) */}
-              {viewMode === 'list' && (
-                <div className="mb-4">
-                  <div className="flex bg-muted border border-border rounded-lg p-1 w-fit">
-                    <Button
-                      variant={filter === 'all' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setFilter('all')}
-                      className="rounded-md"
-                    >
-                      Tout
-                    </Button>
-                    <Button
-                      variant={filter === 'income' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setFilter('income')}
-                      className="rounded-md"
-                    >
-                      Revenus
-                    </Button>
-                    <Button
-                      variant={filter === 'expense' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setFilter('expense')}
-                      className="rounded-md"
-                    >
-                      Dépenses
-                    </Button>
-                  </div>
+              <div className="flex items-center justify-between gap-4 mb-4">
+                {/* Filters - Only show for list view */}
+                {viewMode === 'list' && (
+                  <div className="relative flex bg-muted border border-border rounded-lg p-1 gap-1">
+                  <button
+                    onClick={() => setFilter('all')}
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                      filter === 'all' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {filter === 'all' && (
+                      <motion.div layoutId="filter-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <span className="relative z-10">Tout</span>
+                  </button>
+                  <button
+                    onClick={() => setFilter('income')}
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                      filter === 'income' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {filter === 'income' && (
+                      <motion.div layoutId="filter-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <span className="relative z-10">Revenus</span>
+                  </button>
+                  <button
+                    onClick={() => setFilter('expense')}
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                      filter === 'expense' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {filter === 'expense' && (
+                      <motion.div layoutId="filter-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <span className="relative z-10">Dépenses</span>
+                  </button>
+                  <button
+                    onClick={() => setFilter('credit')}
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                      filter === 'credit' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {filter === 'credit' && (
+                      <motion.div layoutId="filter-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <span className="relative z-10">Crédits</span>
+                  </button>
+                  <button
+                    onClick={() => setFilter('non-credit')}
+                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                      filter === 'non-credit' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {filter === 'non-credit' && (
+                      <motion.div layoutId="filter-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
+                    )}
+                    <span className="relative z-10">Simples</span>
+                  </button>
                 </div>
-              )}
+                )}
+
+                {/* Single Add Button */}
+                <Button
+                  variant="default"
+                  onClick={handleAddItem}
+                  size="lg"
+                  className={`px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold ${viewMode !== 'list' ? 'ml-auto' : ''}`}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Ajouter
+                </Button>
+              </div>
 
               {/* Content */}
               {viewMode === 'list' ? (
@@ -340,10 +320,10 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
                         </p>
                         <Button
                           variant="default"
-                          onClick={() => handleAddItem(filter === 'income' ? 'income' : 'expense')}
+                          onClick={handleAddItem}
                         >
                           <Plus className="mr-2 h-4 w-4" />
-                          {filter === 'income' ? 'Ajouter un revenu' : 'Ajouter une dépense'}
+                          Ajouter un élément
                         </Button>
                       </CardContent>
                     </Card>
@@ -369,7 +349,7 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
                             item={item}
                             onEdit={handleEditItem}
                             onDelete={handleDeleteItem}
-                            loading={loading}
+                            loading={isLoading}
                           />
                         );
                       });
@@ -413,25 +393,34 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
         </div>
 
         {/* Form Modals */}
-        {showForm && formType === 'expense' && (
-          <ExpenseFormModal
-            item={editingItem}
-            onSuccess={handleFormSuccess}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingItem(undefined);
-            }}
+        {showTypeSelector && (
+          <ItemTypeSelector
+            onSelect={handleTypeSelect}
+            onCancel={handleFormCancel}
           />
         )}
 
-        {showForm && formType === 'income' && (
-          <IncomeFormModal
+        {showExpenseForm && (
+          <SimpleExpenseForm
             item={editingItem}
             onSuccess={handleFormSuccess}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingItem(undefined);
-            }}
+            onCancel={handleFormCancel}
+          />
+        )}
+
+        {showCreditForm && (
+          <CreditExpenseForm
+            item={editingItem as any}
+            onSuccess={handleFormSuccess}
+            onCancel={handleFormCancel}
+          />
+        )}
+
+        {showIncomeForm && (
+          <SimpleIncomeForm
+            item={editingItem}
+            onSuccess={handleFormSuccess}
+            onCancel={handleFormCancel}
           />
         )}
       </div>

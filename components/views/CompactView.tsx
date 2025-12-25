@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { MonthlyItem, MonthlyExpense, getPayCyclePosition } from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
@@ -13,6 +14,7 @@ interface CompactViewProps {
 }
 
 const CompactView = ({ items, onEdit }: CompactViewProps) => {
+  const router = useRouter();
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
       const posA = getPayCyclePosition(a.dayOfMonth);
@@ -64,7 +66,7 @@ const CompactView = ({ items, onEdit }: CompactViewProps) => {
                   className={`border-b border-border hover:bg-muted/30 cursor-pointer transition-colors ${
                     index % 2 === 0 ? 'bg-card' : 'bg-muted/10'
                   }`}
-                  onClick={() => onEdit(item)}
+                  onClick={() => router.push(`/expense/${item.id}`)}
                 >
                   {/* Jour */}
                   <td className="px-4 py-3">
