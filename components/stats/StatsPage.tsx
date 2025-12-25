@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, memo } from 'react';
 import { MonthlyItem, MonthlyExpense} from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -781,4 +781,4 @@ const StatsPage = ({ items, totalIncome, totalExpenses, remaining }: StatsPagePr
   );
 };
 
-export default StatsPage;
+export default memo(StatsPage);

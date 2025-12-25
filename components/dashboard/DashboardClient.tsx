@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useOptimistic } from 'react';
-import { Plus, TrendingUp, TrendingDown, DollarSign, CreditCard, Calendar as CalendarIcon, List, BarChart3, Columns, TableProperties, Grid3x3, Activity, LayoutGrid } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, DollarSign, CreditCard, Calendar as CalendarIcon, List, Columns, TableProperties, Grid3x3, Activity, LayoutGrid, BarChart3 } from 'lucide-react';
 import { MonthlyItem, MonthlyCalculation, getPayCyclePosition } from '@/lib/types';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import CompactView from '@/components/views/CompactView';
 import HeatmapView from '@/components/views/HeatmapView';
 import KanbanView from '@/components/views/KanbanView';
 import TreemapView from '@/components/views/TreemapView';
-import { LogoutButton } from '@/components/auth/LogoutButton';
+import { AppHeader } from '@/components/layout/AppHeader';
 
 interface DashboardClientProps {
   items: MonthlyItem[];
@@ -37,11 +37,11 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
     (state, newItem: MonthlyItem) => [...state, newItem]
   );
 
+  const [mainTab, setMainTab] = useState<'dashboard' | 'stats'>('dashboard');
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState<'income' | 'expense'>('expense');
   const [editingItem, setEditingItem] = useState<MonthlyItem | undefined>();
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
-  const [mainTab, setMainTab] = useState<'dashboard' | 'stats'>('dashboard');
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'timeline' | 'compact' | 'heatmap' | 'kanban' | 'treemap'>('list');
   const [loading, setLoading] = useState(false);
 
@@ -92,12 +92,10 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Modern Header */}
+      <AppHeader />
+
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-4 sm:mb-6">
-          <h1 className="text-2xl sm:text-4xl font-bold text-foreground">Dépense-Man</h1>
-          <LogoutButton />
-        </header>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2 mb-4 sm:mb-6">
@@ -200,7 +198,8 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
 
           {mainTab === 'dashboard' && (
             <TabsContent>
-              {/* Action Buttons */}
+        {/* Action Buttons */}
+        <div className="mb-6">
               <div className="flex flex-col sm:flex-row gap-2 mb-4">
                 <Button
                   variant="default"
@@ -392,6 +391,7 @@ export function DashboardClient({ items: initialItems, calculation: initialCalcu
               ) : (
                 <Calendar items={items} />
               )}
+        </div>
             </TabsContent>
           )}
 

@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from 'react';
 import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
 import { login } from '@/lib/auth/actions';
@@ -54,10 +55,30 @@ export function LoginForm() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <h1 className="text-2xl font-bold text-center">Dépense Man</h1>
-        <p className="text-muted-foreground text-center">Connectez-vous pour continuer</p>
+    <Card className="w-full max-w-md">
+      <CardHeader className="space-y-4">
+        {/* Logo */}
+        <div className="flex justify-center">
+          <div className="relative w-20 h-20">
+            <Image
+              src="/web-app-manifest-192x192.png"
+              alt="Dépense-Man Logo"
+              fill
+              className="rounded-2xl shadow-lg object-cover"
+              priority
+            />
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-foreground font-display tracking-tight">
+            Dépense-Man
+          </h1>
+          <p className="text-muted-foreground">
+            Connectez-vous pour continuer
+          </p>
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -85,7 +106,7 @@ export function LoginForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="_ _ _ _ _ _ _ _"
               required
               disabled={isLoading}
             />

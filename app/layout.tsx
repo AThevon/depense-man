@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { Poppins, Fira_Code } from "next/font/google";
+import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 
-const fontSans = Poppins({
-  variable: "--font-poppins",
+// Font pour headers, titres, boutons (moderne et géométrique)
+const fontDisplay = Space_Grotesk({
+  variable: "--font-display",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const fontMono = Fira_Code({
-  variable: "--font-fira-code",
+// Font pour body, paragraphes (lisible et clean)
+const fontBody = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -39,11 +43,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
       { url: "/web-app-manifest-192x192.png", sizes: "192x192", type: "image/png" },
       { url: "/web-app-manifest-512x512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/web-app-manifest-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
 };
@@ -72,10 +77,10 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#232323" />
         <meta name="msapplication-tap-highlight" content="no" />
-        <link rel="apple-touch-icon" href="/web-app-manifest-192x192.png" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
         <link rel="mask-icon" href="/web-app-manifest-192x192.png" color="#232323" />
       </head>
-      <body className={`${fontSans.variable} ${fontMono.variable} antialiased`}>
+      <body className={`${fontDisplay.variable} ${fontBody.variable} font-body antialiased`}>
         {children}
         <script
           dangerouslySetInnerHTML={{

@@ -21,7 +21,10 @@
       "Bash(killall:*)",
       "Bash(git stash show:*)",
       "Bash(git stash:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(chmod:*)",
+      "Bash(./generate-icons.sh:*)",
+      "Bash(sips:*)"
     ],
     "deny": []
   }
