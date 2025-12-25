@@ -1,4 +1,4 @@
-const CACHE_NAME = 'depense-manager-v1';
+const CACHE_NAME = 'depense-manager-v2';
 const urlsToCache = [
   '/',
   '/manifest.json',
