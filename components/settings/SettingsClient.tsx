@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, User, Palette, Database, Info } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -17,9 +17,42 @@ interface SettingsClientProps {
 export function SettingsClient({ user }: SettingsClientProps) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>('account');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('dark');
+
+  // Charger le thème au démarrage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else {
+      setTheme('dark');
+    }
+  }, []);
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'auto') => {
+    setTheme(newTheme);
+
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else if (newTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    } else {
+      // Auto mode
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      localStorage.setItem('theme', 'auto');
+    }
   };
 
   const sections = [
@@ -114,7 +147,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                       <p className="font-medium text-foreground">Changer le mot de passe</p>
                       <p className="text-sm text-muted-foreground">Mettre à jour vos identifiants</p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => setShowPasswordModal(true)}>
                       Modifier
                     </Button>
                   </div>
@@ -148,17 +181,38 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground">Thème</label>
                   <div className="grid grid-cols-3 gap-3">
-                    <button className="p-4 rounded-lg border border-border bg-card hover:bg-muted transition-colors">
+                    <button
+                      onClick={() => handleThemeChange('light')}
+                      className={`p-4 rounded-lg border transition-colors ${
+                        theme === 'light'
+                          ? 'border-2 border-primary bg-primary/10'
+                          : 'border border-border bg-card hover:bg-muted'
+                      }`}
+                    >
                       <div className="w-full h-12 bg-background rounded mb-2 border border-border"></div>
-                      <p className="text-xs font-medium">Clair</p>
+                      <p className={`text-xs font-medium ${theme === 'light' ? 'text-primary' : ''}`}>Clair</p>
                     </button>
-                    <button className="p-4 rounded-lg border-2 border-primary bg-primary/10">
+                    <button
+                      onClick={() => handleThemeChange('dark')}
+                      className={`p-4 rounded-lg border transition-colors ${
+                        theme === 'dark'
+                          ? 'border-2 border-primary bg-primary/10'
+                          : 'border border-border bg-card hover:bg-muted'
+                      }`}
+                    >
                       <div className="w-full h-12 bg-zinc-900 rounded mb-2"></div>
-                      <p className="text-xs font-medium text-primary">Sombre</p>
+                      <p className={`text-xs font-medium ${theme === 'dark' ? 'text-primary' : ''}`}>Sombre</p>
                     </button>
-                    <button className="p-4 rounded-lg border border-border bg-card hover:bg-muted transition-colors">
+                    <button
+                      onClick={() => handleThemeChange('auto')}
+                      className={`p-4 rounded-lg border transition-colors ${
+                        theme === 'auto'
+                          ? 'border-2 border-primary bg-primary/10'
+                          : 'border border-border bg-card hover:bg-muted'
+                      }`}
+                    >
                       <div className="w-full h-12 bg-gradient-to-b from-background to-zinc-900 rounded mb-2 border border-border"></div>
-                      <p className="text-xs font-medium">Auto</p>
+                      <p className={`text-xs font-medium ${theme === 'auto' ? 'text-primary' : ''}`}>Auto</p>
                     </button>
                   </div>
                 </div>
@@ -270,6 +324,28 @@ export function SettingsClient({ user }: SettingsClientProps) {
           )}
         </div>
       </div>
+
+      {/* Modale changement de mot de passe */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <h2 className="text-lg font-semibold">Changer le mot de passe</h2>
+              <p className="text-sm text-muted-foreground">
+                Cette fonctionnalité sera bientôt disponible
+              </p>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Pour l'instant, utilisez la fonction "Mot de passe oublié" sur la page de connexion pour réinitialiser votre mot de passe.
+              </p>
+              <Button onClick={() => setShowPasswordModal(false)} className="w-full">
+                Fermer
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
