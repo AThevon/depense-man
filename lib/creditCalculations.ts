@@ -35,15 +35,18 @@ export function getPaymentsMadeUntil(expense: MonthlyExpense, untilDate: Date): 
   }
 
   const startDate = startOfMonth(new Date(expense.creditStartDate));
-  const until = startOfMonth(untilDate);
+  const untilMonth = startOfMonth(untilDate);
+  const actualDay = untilDate.getDate();
 
   let paymentsMade = 0;
   let currentMonth = startDate;
 
-  while ((isSameMonth(currentMonth, until) || isBefore(currentMonth, until)) && paymentsMade < expense.creditDuration) {
-    const isPaymentDayPassed = until.getDate() >= expense.dayOfMonth || isAfter(until, currentMonth);
-
-    if (isBefore(currentMonth, until) || (isSameMonth(currentMonth, until) && isPaymentDayPassed)) {
+  while ((isSameMonth(currentMonth, untilMonth) || isBefore(currentMonth, untilMonth)) && paymentsMade < expense.creditDuration) {
+    if (isBefore(currentMonth, untilMonth)) {
+      // Mois passé : le paiement a été effectué
+      paymentsMade++;
+    } else if (isSameMonth(currentMonth, untilMonth) && actualDay >= expense.dayOfMonth) {
+      // Mois en cours : vérifier si le jour de prélèvement est passé
       paymentsMade++;
     }
 

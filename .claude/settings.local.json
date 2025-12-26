@@ -26,7 +26,8 @@
       "Bash(./generate-icons.sh:*)",
       "Bash(sips:*)",
       "Bash(awk:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }
