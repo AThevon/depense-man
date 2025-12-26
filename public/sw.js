@@ -1,4 +1,4 @@
-const CACHE_NAME = 'depense-manager-v2';
+const CACHE_NAME = 'depense-manager-v3';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -15,6 +15,7 @@ self.addEventListener('install', (event) => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
+      .then(() => self.skipWaiting()) // Force activation immédiate
   );
 });
 
@@ -51,7 +52,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches and take control immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -63,7 +64,7 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Prendre le contrôle immédiatement
   );
 });
 
