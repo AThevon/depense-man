@@ -98,7 +98,7 @@ export function AppHeader({ currentTab = 'dashboard', onTabChange }: AppHeaderPr
               <h1 className="text-xl sm:text-2xl font-bold text-foreground font-display tracking-tight">
                 Dépense-Man
               </h1>
-              <p className="text-xs text-muted-foreground">Vers &apos;l&apos;infini money</p>
+              <p className="text-xs text-muted-foreground">Vers l&apos;infini money</p>
             </div>
             <h1 className="sm:hidden text-xl font-bold text-foreground font-display">
               D-Man
