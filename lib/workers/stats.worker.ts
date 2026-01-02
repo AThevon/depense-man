@@ -30,6 +30,8 @@ export interface StatsWorkerOutput {
     isActive: boolean;
   }>;
   cashFlowData: Array<{ day: string; income: number; expense: number; balance: number }>;
+  currentBalance: number;
+  remainingExpenses: number;
 }
 
 self.onmessage = (e: MessageEvent<StatsWorkerInput>) => {
@@ -233,6 +235,58 @@ self.onmessage = (e: MessageEvent<StatsWorkerInput>) => {
     return { ...day, balance: cumulativeBalance };
   });
 
+  // Calcul du solde actuel (basé sur le jour actuel dans le cycle de paye)
+  const todayDay = today.getDate();
+
+  // Fonction pour déterminer la position dans le cycle de paye (29 = début du cycle)
+  const getPayCyclePosition = (day: number): number => {
+    if (day >= 29) return day - 29;
+    return day + 3; // 1 -> 4, 2 -> 5, etc.
+  };
+
+  const currentPosition = getPayCyclePosition(todayDay);
+
+  // Revenus reçus jusqu'à aujourd'hui
+  const incomeReceived = items
+    .filter(item => item.type === 'income')
+    .filter(item => getPayCyclePosition(item.dayOfMonth) <= currentPosition)
+    .reduce((sum, item) => sum + item.amount, 0);
+
+  // Dépenses effectuées jusqu'à aujourd'hui
+  const expensesPaid = items
+    .filter(item => item.type === 'expense')
+    .filter(item => getPayCyclePosition(item.dayOfMonth) <= currentPosition)
+    .reduce((sum, item) => {
+      const expenseItem = item as MonthlyExpense;
+      if (expenseItem.isCredit) {
+        const creditInfo = calculateCreditInfoAtDate(expenseItem);
+        if (creditInfo?.isActive) {
+          return sum + creditInfo.monthlyAmount;
+        }
+        return sum;
+      }
+      return sum + item.amount;
+    }, 0);
+
+  // Dépenses restantes à payer ce mois
+  const remainingExpenses = items
+    .filter(item => item.type === 'expense')
+    .filter(item => getPayCyclePosition(item.dayOfMonth) > currentPosition)
+    .reduce((sum, item) => {
+      const expenseItem = item as MonthlyExpense;
+      if (expenseItem.isCredit) {
+        const creditInfo = calculateCreditInfoAtDate(expenseItem);
+        if (creditInfo?.isActive) {
+          return sum + creditInfo.monthlyAmount;
+        }
+        return sum;
+      }
+      return sum + item.amount;
+    }, 0);
+
+  // Solde actuel = revenus reçus - dépenses payées
+  const currentBalance = incomeReceived - expensesPaid;
+
   const result: StatsWorkerOutput = {
     predictions,
     expensesByIcon,
@@ -244,6 +298,8 @@ self.onmessage = (e: MessageEvent<StatsWorkerInput>) => {
     totalSmallExpenses,
     creditTimeline,
     cashFlowData,
+    currentBalance,
+    remainingExpenses,
   };
 
   self.postMessage(result);

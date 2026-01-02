@@ -52,7 +52,7 @@ const TimelineView = ({ items, onEdit }: TimelineViewProps) => {
     <div className="space-y-6">
       {/* Timeline header */}
       <motion.div
-        className="flex items-center space-x-4 overflow-x-auto pb-2"
+        className="flex items-center space-x-4 pb-2"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}

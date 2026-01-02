@@ -18,7 +18,9 @@ import {
   TrendingUp,
   TrendingDown,
   DollarSign,
-  CreditCard
+  CreditCard,
+  Wallet,
+  Clock
 } from 'lucide-react';
 import type { StatsWorkerOutput } from '@/lib/workers/stats.worker';
 
@@ -389,7 +391,9 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
   const metricCards = [
     { icon: TrendingUp, iconColor: 'text-success', title: 'Revenus', value: formatAmount(totalIncome), valueColor: 'text-success', subtitle: 'Total mensuel' },
     { icon: TrendingDown, iconColor: 'text-destructive', title: 'Dépenses', value: formatAmount(totalExpenses), valueColor: 'text-destructive', subtitle: 'Total mensuel' },
-    { icon: DollarSign, iconColor: 'text-primary', title: 'Solde', value: formatAmount(remaining), valueColor: getRemainingColor(remaining), subtitle: 'Après dépenses' },
+    { icon: Wallet, iconColor: 'text-primary', title: 'Solde actuel', value: workerData ? formatAmount(workerData.currentBalance) : null, valueColor: workerData ? getRemainingColor(workerData.currentBalance) : 'text-primary', subtitle: 'Disponible aujourd\'hui' },
+    { icon: Clock, iconColor: 'text-warning', title: 'Reste à payer', value: workerData ? formatAmount(workerData.remainingExpenses) : null, valueColor: 'text-warning', subtitle: 'Dépenses à venir' },
+    { icon: DollarSign, iconColor: 'text-primary', title: 'Solde fin de mois', value: formatAmount(remaining), valueColor: getRemainingColor(remaining), subtitle: 'Après toutes dépenses' },
     { icon: CreditCard, iconColor: 'text-primary', title: 'Crédits', value: workerData?.creditTimeline.filter(c => c.isActive).length || 0, valueColor: 'text-primary', subtitle: 'En cours' },
     { icon: Sparkles, iconColor: 'text-primary', title: 'Santé financière', value: `${healthScore}/100`, valueColor: getHealthColor(healthScore), subtitle: getHealthLabel(healthScore) },
     { icon: Zap, iconColor: 'text-warning', title: 'Vélocité', value: workerData ? formatAmount(workerData.dailyVelocity) : null, valueColor: 'text-foreground', subtitle: 'par jour' },
@@ -614,17 +618,17 @@ const StatsPageWithWorker = ({ items, totalIncome, totalExpenses, remaining }: S
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4">
               {workerData.criticalDays.map((critical) => (
               <div
                 key={critical.day}
-                className="flex flex-col items-center justify-center p-4 bg-destructive/10 rounded-lg border border-destructive/20"
+                className="flex flex-col items-center justify-center p-2 sm:p-4 bg-destructive/10 rounded-lg border border-destructive/20"
               >
-                <Calendar className="h-5 w-5 text-destructive mb-2" />
-                <div className="text-2xl font-bold text-foreground">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-destructive mb-1 sm:mb-2" />
+                <div className="text-lg sm:text-2xl font-bold text-foreground">
                   {critical.day}
                 </div>
-                <div className="text-sm text-destructive font-semibold mt-1">
+                <div className="text-xs sm:text-sm text-destructive font-semibold mt-1">
                   {formatAmount(critical.total)}
                 </div>
               </div>

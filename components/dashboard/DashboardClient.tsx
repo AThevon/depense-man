@@ -114,11 +114,11 @@ export function DashboardClient() {
           {/* Action Buttons */}
           <div className="mb-6">
               {/* View Mode Selector */}
-              <div className="mb-4 overflow-x-auto">
-                <div className="relative flex bg-muted border border-border rounded-lg p-1 min-w-max gap-1">
+              <div className="mb-4">
+                <div className="relative flex flex-wrap bg-muted border border-border rounded-lg p-1 gap-1">
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
                       viewMode === 'list' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -126,11 +126,11 @@ export function DashboardClient() {
                       <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
                     )}
                     <List className="h-4 w-4 relative z-10" />
-                    <span className="relative z-10">Liste</span>
+                    <span className="relative z-10 hidden sm:inline">Liste</span>
                   </button>
                   <button
                     onClick={() => setViewMode('timeline')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
                       viewMode === 'timeline' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -138,11 +138,11 @@ export function DashboardClient() {
                       <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
                     )}
                     <Activity className="h-4 w-4 relative z-10" />
-                    <span className="relative z-10">Timeline</span>
+                    <span className="relative z-10 hidden sm:inline">Timeline</span>
                   </button>
                   <button
                     onClick={() => setViewMode('compact')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
                       viewMode === 'compact' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -150,11 +150,11 @@ export function DashboardClient() {
                       <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
                     )}
                     <TableProperties className="h-4 w-4 relative z-10" />
-                    <span className="relative z-10">Compact</span>
+                    <span className="relative z-10 hidden sm:inline">Compact</span>
                   </button>
                   <button
                     onClick={() => setViewMode('kanban')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
                       viewMode === 'kanban' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -162,11 +162,11 @@ export function DashboardClient() {
                       <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
                     )}
                     <Columns className="h-4 w-4 relative z-10" />
-                    <span className="relative z-10">Kanban</span>
+                    <span className="relative z-10 hidden sm:inline">Kanban</span>
                   </button>
                   <button
                     onClick={() => setViewMode('heatmap')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
                       viewMode === 'heatmap' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -174,11 +174,11 @@ export function DashboardClient() {
                       <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
                     )}
                     <Grid3x3 className="h-4 w-4 relative z-10" />
-                    <span className="relative z-10">Heatmap</span>
+                    <span className="relative z-10 hidden sm:inline">Heatmap</span>
                   </button>
                   <button
                     onClick={() => setViewMode('treemap')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
                       viewMode === 'treemap' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -186,11 +186,11 @@ export function DashboardClient() {
                       <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
                     )}
                     <LayoutGrid className="h-4 w-4 relative z-10" />
-                    <span className="relative z-10">Treemap</span>
+                    <span className="relative z-10 hidden sm:inline">Treemap</span>
                   </button>
                   <button
                     onClick={() => setViewMode('calendar')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
                       viewMode === 'calendar' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -198,18 +198,18 @@ export function DashboardClient() {
                       <motion.div layoutId="viewmode-pill" className="absolute inset-0 bg-primary rounded-md" transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }} />
                     )}
                     <CalendarIcon className="h-4 w-4 relative z-10" />
-                    <span className="relative z-10">Calendrier</span>
+                    <span className="relative z-10 hidden sm:inline">Calendrier</span>
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 {/* Filters - Only show for list view */}
                 {viewMode === 'list' && (
-                  <div className="relative flex bg-muted border border-border rounded-lg p-1 gap-1">
+                  <div className="relative flex flex-wrap bg-muted border border-border rounded-lg p-1 gap-1">
                   <button
                     onClick={() => setFilter('all')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors duration-200 ${
                       filter === 'all' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -220,7 +220,7 @@ export function DashboardClient() {
                   </button>
                   <button
                     onClick={() => setFilter('income')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors duration-200 ${
                       filter === 'income' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -231,7 +231,7 @@ export function DashboardClient() {
                   </button>
                   <button
                     onClick={() => setFilter('expense')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors duration-200 ${
                       filter === 'expense' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -242,7 +242,7 @@ export function DashboardClient() {
                   </button>
                   <button
                     onClick={() => setFilter('credit')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors duration-200 ${
                       filter === 'credit' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -253,7 +253,7 @@ export function DashboardClient() {
                   </button>
                   <button
                     onClick={() => setFilter('non-credit')}
-                    className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                    className={`relative px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors duration-200 ${
                       filter === 'non-credit' ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
