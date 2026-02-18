@@ -200,6 +200,13 @@
   --success-foreground: oklch(0.985 0 0);
 }
 
+/* iOS safe area support */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

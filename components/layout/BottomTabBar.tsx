@@ -28,7 +28,7 @@ export function BottomTabBar() {
               <button
                 key={tab.id}
                 onClick={() => router.push(tab.href)}
-                className="relative flex flex-col items-center justify-center py-2 px-3 min-w-[64px]"
+                className="relative flex flex-col items-center justify-center py-2 px-3 min-w-[64px] min-h-[44px]"
               >
                 {isActive && (
                   <motion.div

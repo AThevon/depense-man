@@ -91,7 +91,7 @@ export function AppHeader() {
           {/* Settings Icon */}
           <button
             onClick={() => router.push('/settings')}
-            className="p-2 rounded-lg text-[#71717a] hover:text-white hover:bg-[rgba(255,255,255,0.06)] transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[#71717a] hover:text-white hover:bg-[rgba(255,255,255,0.06)] transition-colors"
             aria-label="Param\u00e8tres"
           >
             <Settings className="h-5 w-5" />

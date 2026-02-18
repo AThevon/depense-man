@@ -139,7 +139,7 @@ export function DashboardClient() {
             <select
               value={simulatedDay}
               onChange={(e) => setSimulatedDay(Number(e.target.value))}
-              className="text-xs bg-secondary/50 border border-border rounded-md px-2 py-1 text-foreground"
+              className="text-xs bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] rounded-lg px-2 py-1 text-foreground"
             >
               {Array.from({ length: 31 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
