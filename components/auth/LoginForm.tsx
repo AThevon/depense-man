@@ -44,7 +44,7 @@ const LoginForm = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-lg">
-        <Card className="shadow-lg">
+        <Card className="glass rounded-2xl shadow-lg">
           <CardHeader className="flex flex-col items-center text-center ">
             <div className="flex justify-center mb-6">
               {/* <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"> */}
@@ -78,6 +78,7 @@ const LoginForm = () => {
                     placeholder="votre@email.com"
                     disabled={loading}
                     required
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)]"
                   />
                 </div>
 
@@ -94,6 +95,7 @@ const LoginForm = () => {
                     placeholder="••••••••"
                     disabled={loading}
                     required
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)]"
                   />
                 </div>
               </div>
