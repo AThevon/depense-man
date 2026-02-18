@@ -1,10 +1,8 @@
 import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Edit3, Trash2, Calendar, CreditCard } from 'lucide-react';
-import { MonthlyItem, MonthlyExpense} from '@/lib/types';
+import { Edit3, Trash2 } from 'lucide-react';
+import { MonthlyItem, MonthlyExpense } from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -13,10 +11,10 @@ interface MonthlyItemCardProps {
   onEdit: (item: MonthlyItem) => void;
   onDelete: (id: string) => void;
   loading?: boolean;
+  isPast?: boolean;
 }
 
-const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyItemCardProps) => {
-  const router = useRouter();
+const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false, isPast = false }: MonthlyItemCardProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [startX, setStartX] = useState(0);
   const [currentX, setCurrentX] = useState(0);
@@ -24,8 +22,10 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
   const cardRef = useRef<HTMLDivElement>(null);
 
   const isExpense = item.type === 'expense';
-  const expenseItem = isExpense ? item as MonthlyExpense : null;
+  const expenseItem = isExpense ? (item as MonthlyExpense) : null;
   const isCredit = expenseItem?.isCredit || false;
+
+  const creditInfo = expenseItem ? calculateCreditInfoAtDate(expenseItem) : null;
 
   const handleDelete = () => {
     onDelete(item.id);
@@ -39,8 +39,6 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
     }).format(amount);
   };
 
-  const creditInfo = expenseItem ? calculateCreditInfoAtDate(expenseItem) : null;
-
   // Gestion du swipe sur mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     setStartX(e.touches[0].clientX);
@@ -51,8 +49,8 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
     if (!isDragging) return;
     const touchX = e.touches[0].clientX;
     const diff = startX - touchX;
-    
-    if (diff > 0 && diff < 120) { // Limite le swipe à 120px
+
+    if (diff > 0 && diff < 120) {
       setCurrentX(diff);
     }
   };
@@ -60,8 +58,8 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
   const handleTouchEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    
-    if (currentX > 60) { // Seuil pour activer le swipe
+
+    if (currentX > 60) {
       setCurrentX(120);
     } else {
       setCurrentX(0);
@@ -72,15 +70,9 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
     setCurrentX(0);
   };
 
-  const handleCardClick = () => {
-    if (currentX > 0) {
-      // Si swiped, juste reset le swipe
-      resetSwipe();
-    } else {
-      // Sinon, naviguer vers la page de détail
-      router.push(`/expense/${item.id}`);
-    }
-  };
+  const displayAmount = creditInfo && creditInfo.isActive
+    ? creditInfo.monthlyAmount
+    : item.amount;
 
   return (
     <motion.div
@@ -90,145 +82,117 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
       exit={{ opacity: 0, x: -100 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
-      <Card className={`relative group p-0 ${isCredit ? 'bg-gradient-to-r from-card via-muted/30 to-card' : ''}`} 
-            style={isCredit ? {
-              backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 8px, oklch(from var(--muted) l c h / 0.3) 8px, oklch(from var(--muted) l c h / 0.3) 12px)',
-              backgroundSize: '24px 24px'
-            } : {}}>
-        {/* Boutons d'actions cachés (révélés par swipe sur mobile) */}
-        <div 
-          className="absolute right-0 top-0 h-full flex items-center space-x-2 bg-card px-4 sm:hidden transition-opacity duration-200"
-          style={{
-            opacity: currentX > 30 ? 1 : 0
+      {/* Boutons d'actions cachés (révélés par swipe sur mobile) */}
+      <div
+        className="absolute right-0 top-0 h-full flex items-center space-x-2 px-4 sm:hidden transition-opacity duration-200"
+        style={{
+          opacity: currentX > 30 ? 1 : 0,
+        }}
+      >
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(item);
+            resetSwipe();
           }}
+          disabled={loading}
+          className="h-8 w-8 p-0"
         >
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(item);
-              resetSwipe();
-            }}
-            disabled={loading}
-            className="h-8 w-8 p-0"
-          >
-            <Edit3 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowDeleteConfirm(true);
-              resetSwipe();
-            }}
-            disabled={loading}
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <Edit3 className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowDeleteConfirm(true);
+            resetSwipe();
+          }}
+          disabled={loading}
+          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div
+        ref={cardRef}
+        className={`flex items-center gap-3 px-2 py-3 border-b border-[rgba(255,255,255,0.05)] select-none group cursor-pointer transition-opacity ${isPast ? 'opacity-60' : ''}`}
+        style={{
+          transform: `translateX(-${currentX}px)`,
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={() => {
+          if (currentX > 0) {
+            resetSwipe();
+          }
+        }}
+      >
+        {/* Icone */}
+        <div className="p-2 rounded-lg flex-shrink-0 bg-secondary/50">
+          <Icon
+            name={item.icon}
+            className={`h-5 w-5 ${isExpense ? 'text-destructive' : 'text-success'}`}
+          />
         </div>
 
-        <CardContent
-          ref={cardRef}
-          className="p-4 relative z-10 cursor-pointer select-none"
-          style={{
-            transform: `translateX(-${currentX}px)`
-          }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onClick={handleCardClick}
-        >
-          <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center space-x-3 flex-1 min-w-0">
-            <div className="p-2 sm:p-3 rounded-lg flex-shrink-0 bg-secondary/50">
-              <Icon name={item.icon} className={`h-5 w-5 sm:h-6 sm:w-6 ${isExpense ? 'text-destructive' : 'text-success'}`} />
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-foreground truncate !text-lg sm:text-base">
-                {item.name}
-              </p>
-
-              <div className="flex items-center space-x-2 mt-1">
-                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs sm:text-sm text-muted-foreground">
-                  Le {item.dayOfMonth}
-                </span>
-              </div>
-
-              {creditInfo && creditInfo.isActive && (
-                <div className="flex items-center space-x-2 mt-1">
-                  <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-muted-foreground truncate">
-                    {creditInfo.remainingPayments} paiements restants
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2 flex-shrink-0">
-            {/* Boutons desktop seulement */}
-            <div className="hidden sm:flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(item);
-                }}
-                disabled={loading}
-                className="h-8 w-8 p-0"
-              >
-                <Edit3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDeleteConfirm(true);
-                }}
-                disabled={loading}
-                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-            <span className={`text-lg sm:text-xl font-bold ${isExpense ? 'text-destructive' : 'text-success'} whitespace-nowrap`}>
-              {isExpense ? '-' : '+'}
-              {creditInfo && creditInfo.isActive ?
-                formatAmount(creditInfo.monthlyAmount) :
-                formatAmount(item.amount)
-              }
-            </span>
-          </div>
-        </div>
-
-          {creditInfo && creditInfo.isActive && (
-            <div className="mt-4 space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground font-medium">Progression</span>
-                <span className="text-primary font-semibold">{Math.round(creditInfo.progressPercentage)}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2.5">
-                <div
-                  className="bg-primary h-full rounded-full transition-all duration-300"
-                  style={{ width: `${creditInfo.progressPercentage}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Restant: <span className="font-medium text-foreground">{formatAmount(creditInfo.remainingAmount)}</span></span>
-                <span>Total: <span className="font-medium text-foreground">{formatAmount(creditInfo.totalAmount)}</span></span>
-              </div>
-            </div>
+        {/* Nom + sous-texte crédit */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+          {isCredit && creditInfo && creditInfo.isActive && (
+            <p className="text-xs text-muted-foreground">
+              Crédit &middot; {creditInfo.remainingPayments} restants
+            </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
+        {/* Montant + jour */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Boutons desktop */}
+          <div className="hidden sm:flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(item);
+              }}
+              disabled={loading}
+              className="h-7 w-7 p-0"
+            >
+              <Edit3 className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteConfirm(true);
+              }}
+              disabled={loading}
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
+          <span
+            className={`text-sm font-semibold tabular-nums whitespace-nowrap ${
+              isExpense ? 'text-destructive' : 'text-success'
+            }`}
+          >
+            {isExpense ? '-' : '+'}
+            {formatAmount(displayAmount)}
+          </span>
+          <span className="text-xs text-muted-foreground">J{item.dayOfMonth}</span>
+        </div>
+      </div>
+
+      {/* Modal de confirmation de suppression */}
       <AnimatePresence>
         {showDeleteConfirm && (
           <motion.div
@@ -273,4 +237,4 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false }: MonthlyIte
   );
 };
 
-export default MonthlyItemCard; 
+export default MonthlyItemCard;
