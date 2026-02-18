@@ -48,7 +48,7 @@ export function AppHeader() {
                 priority
               />
             </div>
-            <h1 className="text-lg sm:text-xl font-bold text-white font-display tracking-tight">
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
               D-Man
             </h1>
           </div>
