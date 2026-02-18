@@ -1,22 +1,13 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import { StoreInitializer } from "@/components/providers/StoreInitializer";
 import { AppLayout } from "@/components/layout/AppLayout";
 import "./globals.css";
 
-// Font pour headers, titres, boutons (moderne et géométrique)
-const fontDisplay = Space_Grotesk({
-  variable: "--font-display",
+const fontOutfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-// Font pour body, paragraphes (lisible et clean)
-const fontBody = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -82,7 +73,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-icon.png" />
         <link rel="mask-icon" href="/web-app-manifest-192x192.png" color="#232323" />
       </head>
-      <body className={`${fontDisplay.variable} ${fontBody.variable} font-body antialiased`}>
+      <body className={`${fontOutfit.variable} antialiased`}>
         <StoreInitializer>
           <AppLayout>
             {children}
