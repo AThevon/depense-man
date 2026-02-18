@@ -54,7 +54,7 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md glass rounded-2xl">
       <CardHeader className="space-y-4">
         {/* Logo */}
         <div className="flex justify-center">

@@ -39,30 +39,6 @@
     }
   }
 
-  /* Spacing utilities */
-  .section-spacing {
-    margin-bottom: 3rem;
-  }
-
-  @media (max-width: 768px) {
-    .section-spacing {
-      margin-bottom: 2rem;
-    }
-  }
-
-  /* Content max width container */
-  .content-container {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-
-  @media (max-width: 640px) {
-    .content-container {
-      padding: 0 1rem;
-    }
-  }
-
   /* Tabular nums utility */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
@@ -75,11 +51,7 @@
     backdrop-filter: blur(12px);
   }
 
-  .glass-elevated {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-  }
+
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -198,13 +170,6 @@
   --sidebar-ring: oklch(0.552 0 0);
   --success: oklch(0.765 0.177 163);
   --success-foreground: oklch(0.985 0 0);
-}
-
-/* iOS safe area support */
-@supports (padding: env(safe-area-inset-bottom)) {
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
 }
 
 @layer base {

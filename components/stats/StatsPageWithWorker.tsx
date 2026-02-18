@@ -6,8 +6,7 @@ import { MonthlyExpense } from '@/lib/types';
 import { calculateCreditInfo } from '@/lib/types';
 import { Icon } from '@/components/ui/Icon';
 
-const formatEuro = (amount: number) =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+import { formatEuro } from '@/lib/format';
 
 export function StatsPage() {
   const { items, calculation } = useExpensesStore();

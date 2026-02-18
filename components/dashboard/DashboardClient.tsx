@@ -11,8 +11,7 @@ import { CreditExpenseForm } from '@/components/forms/CreditExpenseForm';
 import { SimpleIncomeForm } from '@/components/forms/SimpleIncomeForm';
 import TimeIndicator from './TimeIndicator';
 
-const formatEuro = (amount: number) =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+import { formatEuro } from '@/lib/format';
 
 const filters = [
   { id: 'all', label: 'Tout' },
@@ -255,7 +254,7 @@ export function DashboardClient() {
 
       {showCreditForm && (
         <CreditExpenseForm
-          item={editingItem as any}
+          item={editingItem as MonthlyExpense | undefined}
           onSuccess={handleFormSuccess}
           onCancel={handleFormCancel}
         />

@@ -10,7 +10,7 @@ const tabs = [
   { id: 'list', label: 'Liste', icon: List, href: '/' },
   { id: 'stats', label: 'Stats', icon: BarChart3, href: '/stats' },
   { id: 'projections', label: 'Projections', icon: TrendingUp, href: '/projections' },
-  { id: 'credits', label: 'Cr\u00e9dits', icon: CreditCard, href: '/credits' },
+  { id: 'credits', label: 'Crédits', icon: CreditCard, href: '/credits' },
 ];
 
 export function AppHeader() {
@@ -19,7 +19,7 @@ export function AppHeader() {
 
   const activeTab = tabs.find(tab => tab.href === pathname)?.id || 'list';
 
-  // Initialisation du th\u00e8me
+  // Initialisation du thème
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -33,7 +33,7 @@ export function AppHeader() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[rgba(10,10,11,0.8)] backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)]">
+    <header className="sticky top-0 z-50 w-full bg-[rgba(10,10,11,0.8)] backdrop-blur-xl border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -41,7 +41,7 @@ export function AppHeader() {
             <div className="relative w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
               <Image
                 src="/web-app-manifest-192x192.png"
-                alt="D\u00e9pense-Man Logo"
+                alt="Dépense-Man Logo"
                 width={40}
                 height={40}
                 className="rounded-lg object-cover"
@@ -55,7 +55,7 @@ export function AppHeader() {
 
           {/* Desktop Navigation Tabs - hidden on mobile */}
           <div className="hidden md:flex items-center">
-            <div className="relative flex bg-[rgba(255,255,255,0.06)] rounded-lg p-1 gap-1">
+            <div className="relative flex bg-secondary rounded-lg p-1 gap-1">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 const Icon = tab.icon;
@@ -66,13 +66,13 @@ export function AppHeader() {
                     className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 flex items-center gap-2 rounded-md ${
                       isActive
                         ? 'text-white'
-                        : 'text-[#71717a] hover:text-[#a1a1aa]'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="header-pill"
-                        className="absolute inset-0 bg-[#6366f1] rounded-md"
+                        className="absolute inset-0 bg-primary rounded-md"
                         transition={{
                           type: 'spring',
                           stiffness: 500,
@@ -91,8 +91,8 @@ export function AppHeader() {
           {/* Settings Icon */}
           <button
             onClick={() => router.push('/settings')}
-            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[#71717a] hover:text-white hover:bg-[rgba(255,255,255,0.06)] transition-colors"
-            aria-label="Param\u00e8tres"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted-foreground hover:text-white hover:bg-secondary transition-colors"
+            aria-label="Paramètres"
           >
             <Settings className="h-5 w-5" />
           </button>

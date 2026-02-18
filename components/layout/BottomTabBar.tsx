@@ -8,7 +8,7 @@ const tabs = [
   { id: 'list', label: 'Liste', icon: List, href: '/' },
   { id: 'stats', label: 'Stats', icon: BarChart3, href: '/stats' },
   { id: 'projections', label: 'Proj', icon: TrendingUp, href: '/projections' },
-  { id: 'credits', label: 'Cr\u00e9dits', icon: CreditCard, href: '/credits' },
+  { id: 'credits', label: 'Crédits', icon: CreditCard, href: '/credits' },
 ];
 
 export function BottomTabBar() {
@@ -19,7 +19,7 @@ export function BottomTabBar() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      <div className="bg-[rgba(10,10,11,0.8)] backdrop-blur-xl border-t border-[rgba(255,255,255,0.08)]">
+      <div className="bg-[rgba(10,10,11,0.8)] backdrop-blur-xl border-t border-border">
         <div className="flex items-center justify-around px-2" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -33,13 +33,12 @@ export function BottomTabBar() {
                 {isActive && (
                   <motion.div
                     layoutId="tab-indicator"
-                    className="absolute -top-px left-3 right-3 h-0.5 rounded-full"
-                    style={{ backgroundColor: '#6366f1' }}
+                    className="absolute -top-px left-3 right-3 h-0.5 rounded-full bg-primary"
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 )}
-                <Icon className={`h-5 w-5 mb-1 transition-colors ${isActive ? 'text-[#6366f1]' : 'text-[#71717a]'}`} />
-                <span className={`text-[10px] font-medium transition-colors ${isActive ? 'text-[#6366f1]' : 'text-[#71717a]'}`}>
+                <Icon className={`h-5 w-5 mb-1 transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                <span className={`text-[10px] font-medium transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
                   {tab.label}
                 </span>
               </button>

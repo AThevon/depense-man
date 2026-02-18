@@ -8,8 +8,7 @@ import { Icon } from '@/components/ui/Icon';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-const formatEuro = (amount: number) =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+import { formatEuro } from '@/lib/format';
 
 export function CreditsPage() {
   const { items, calculation } = useExpensesStore();
@@ -43,7 +42,7 @@ export function CreditsPage() {
               <div key={credit.id} className="glass rounded-2xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Icon name={credit.icon} className="h-5 w-5 text-[#fbbf24]" />
+                    <Icon name={credit.icon} className="h-5 w-5 text-warning" />
                     <p className="font-medium">{credit.name}</p>
                   </div>
                   <p className="text-sm font-medium tabular-nums">
@@ -59,7 +58,7 @@ export function CreditsPage() {
                   </div>
                   <div className="w-full h-2 bg-[rgba(255,255,255,0.05)] rounded-full">
                     <div
-                      className="h-full rounded-full bg-[#fbbf24] transition-all"
+                      className="h-full rounded-full bg-warning transition-all"
                       style={{ width: `${info!.progressPercentage}%` }}
                     />
                   </div>
@@ -85,7 +84,7 @@ export function CreditsPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Total mensuel</p>
-              <p className="text-xl font-bold tabular-nums text-[#fbbf24]">
+              <p className="text-xl font-bold tabular-nums text-warning">
                 {formatEuro(calculation.activeCredits.totalMonthly)}
               </p>
             </div>

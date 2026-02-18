@@ -14,8 +14,7 @@ const ResponsiveLine = dynamic(
   { ssr: false }
 );
 
-const formatEuro = (amount: number) =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+import { formatEuro } from '@/lib/format';
 
 export function ProjectionsPage() {
   const { items } = useExpensesStore();
@@ -203,7 +202,7 @@ export function ProjectionsPage() {
                     <div className="flex items-center gap-3">
                       <Icon
                         name={credit.icon}
-                        className="h-5 w-5 text-[#fbbf24]"
+                        className="h-5 w-5 text-warning"
                       />
                       <div>
                         <p className="text-sm font-medium">{credit.name}</p>
