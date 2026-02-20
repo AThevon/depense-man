@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   // Maison & Logement
   Home, Building, Key, Bed, Sofa, Lightbulb, Thermometer, Shield, Hammer, PaintBucket,
@@ -281,7 +282,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
     setSelectedCategory('all');
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4 md:p-10"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
@@ -356,7 +357,8 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
