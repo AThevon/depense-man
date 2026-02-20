@@ -1,16 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
-import { login } from '@/lib/auth/actions';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 export function LoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -28,16 +25,22 @@ export function LoginForm() {
       // 2. Obtenir l'ID token
       const idToken = await userCredential.user.getIdToken();
 
-      // 3. Créer la session serveur (appel direct au server action)
-      const result = await login(idToken);
+      // 3. Créer la session serveur via API route (pas de server action / RSC)
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
 
-      if (result.error) {
-        setError(result.error);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Échec de la connexion');
         return;
       }
 
-      // 4. Rediriger vers le dashboard
-      router.push('/');
+      // 4. Navigation classique (pas de router.push RSC)
+      window.location.replace('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur de connexion');
     } finally {
