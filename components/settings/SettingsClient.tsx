@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Copy, Check, LogOut, Github, Info } from 'lucide-react';
 import { useExpensesStore } from '@/lib/store/expenses';
-import { logout } from '@/lib/auth/actions';
 
 interface SettingsClientProps {
   user: {
@@ -21,6 +20,11 @@ export function SettingsClient({ user }: SettingsClientProps) {
     await navigator.clipboard.writeText(json);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.replace('/login');
   };
 
   return (
@@ -64,7 +68,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
 
         {/* Logout */}
         <button
-          onClick={() => logout()}
+          onClick={handleLogout}
           className="w-full glass rounded-2xl p-4 flex items-center gap-3 text-destructive hover:bg-destructive/10 transition-colors"
         >
           <LogOut className="h-4 w-4" />

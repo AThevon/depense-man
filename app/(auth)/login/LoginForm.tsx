@@ -1,55 +1,50 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
-import { useActionState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
-import { login } from '@/lib/auth/actions';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 export function LoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-
-  // ✅ PATTERN 2025: useActionState pour gérer le server action
-  const [state, formAction, isPending] = useActionState(login, {});
-  const [isAuthenticating, startTransition] = useTransition();
-
-  const isLoading = isPending || isAuthenticating;
-
-  // Rediriger vers le dashboard après un login réussi
-  useEffect(() => {
-    if (state?.success) {
-      router.push('/');
-    }
-  }, [state?.success, router]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
 
     try {
-      // 1. Authentifier avec Firebase Client (hors transition)
+      // 1. Authentifier avec Firebase Client
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
       // 2. Obtenir l'ID token
       const idToken = await userCredential.user.getIdToken();
 
-      // 3. Créer un FormData avec le token
-      const formData = new FormData();
-      formData.append('idToken', idToken);
-
-      // 4. Appeler le Server Action dans une transition (synchrone)
-      startTransition(() => {
-        formAction(formData);
+      // 3. Créer la session serveur via API route (pas de server action / RSC)
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
       });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Échec de la connexion');
+        return;
+      }
+
+      // 4. Navigation classique (pas de router.push RSC)
+      window.location.replace('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur de connexion');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,9 +104,9 @@ export function LoginForm() {
             />
           </div>
 
-          {(error || state?.error) && (
+          {error && (
             <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg text-sm">
-              {error || state?.error}
+              {error}
             </div>
           )}
 
