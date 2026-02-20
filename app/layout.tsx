@@ -85,9 +85,22 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
+                  // Purger les vieux caches de l'ancien SW cache-first
+                  if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                      names.forEach(function(name) {
+                        if (name.startsWith('depense-manager-')) {
+                          caches.delete(name);
+                        }
+                      });
+                    });
+                  }
+
                   navigator.serviceWorker.register('/sw.js')
                     .then(function(reg) {
-                      // Vérifier les mises à jour toutes les 60s
+                      // Forcer la vérification de mise à jour immédiate
+                      reg.update();
+                      // Puis toutes les 60s
                       setInterval(function() { reg.update(); }, 60000);
 
                       reg.addEventListener('updatefound', function() {
@@ -95,7 +108,6 @@ export default function RootLayout({
                         if (!newWorker) return;
                         newWorker.addEventListener('statechange', function() {
                           if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
-                            // Nouvelle version activée — reload automatique
                             window.location.reload();
                           }
                         });
