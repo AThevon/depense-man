@@ -1,22 +1,29 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useExpensesStore } from '@/lib/store/expenses';
 
 export function StoreInitializer({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { initListener, reset } = useExpensesStore();
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
+    if (loading) return;
+
     if (user) {
-      // Initialiser le listener Firestore quand l'utilisateur est connecté
       initListener(user.uid);
     } else {
-      // Reset le store quand l'utilisateur se déconnecte
       reset();
+      // Rediriger vers login si pas d'auth (sauf si déjà sur /login)
+      if (!pathname.startsWith('/login')) {
+        router.replace('/login');
+      }
     }
-  }, [user, initListener, reset]);
+  }, [user, loading, initListener, reset, pathname, router]);
 
   return <>{children}</>;
 }

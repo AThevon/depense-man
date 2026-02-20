@@ -1,25 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { SettingsClient } from '@/components/settings/SettingsClient';
-import { auth } from '@/lib/firebase';
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<{ uid: string; email: string | null } | null>(null);
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
-      if (firebaseUser) {
-        setUser({ uid: firebaseUser.uid, email: firebaseUser.email });
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  if (!user) {
-    return null; // Ou un skeleton minimaliste
+  if (loading || !user) {
+    return null;
   }
 
-  return <SettingsClient user={user} />;
+  return <SettingsClient user={{ uid: user.uid, email: user.email }} />;
 }
