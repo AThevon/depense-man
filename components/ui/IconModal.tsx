@@ -1,48 +1,48 @@
 import { useState } from 'react';
-import { 
+import {
   // Maison & Logement
-  Home, Building, Key, Bed, Sofa, Lightbulb, Thermometer, Shield, Hammer, PaintBucket, 
+  Home, Building, Key, Bed, Sofa, Lightbulb, Thermometer, Shield, Hammer, PaintBucket,
   Armchair, Bath, Fence, Heater, Lamp, Wrench, Drill, Flashlight,
-  
+
   // Transport
-  Car, Plane, Train, Bus, Bike, Ship, Fuel, MapPin, Compass, 
+  Car, Plane, Train, Bus, Bike, Ship, Fuel, MapPin, Compass,
   Truck, PlaneTakeoff, PlaneLanding, Navigation, Anchor,
-  
+
   // Nourriture & Restaurants
-  Utensils, Coffee, Pizza, Apple, ChefHat, Wine, Cake, 
+  Utensils, Coffee, Pizza, Apple, ChefHat, Wine, Cake,
   Fish, Beef, Milk, Cherry,
-  
+
   // Shopping
   ShoppingCart, ShoppingBag, Store, Tag, Package, Gift, Shirt, Gem,
   Receipt, Ticket, ShoppingBasket, Watch, Glasses, Crown,
-  
+
   // Technologie
   Laptop, Phone, Tablet, Headphones, Camera, Monitor, Printer, Router, Gamepad, Tv,
   Mouse, Keyboard, Cpu, HardDrive, Battery, Bluetooth, Speaker,
-  
+
   // Santé & Sport
   Heart, Activity, Dumbbell, Stethoscope, Pill, Eye, Smile,
   Footprints, Bandage, Syringe,
-  
+
   // Finance
   CreditCard, Banknote, Wallet, PiggyBank, TrendingUp, TrendingDown, DollarSign, Euro, Calculator,
   Coins, Landmark, HandCoins,
-  
+
   // Travail & Éducation
   Briefcase, GraduationCap, BookOpen, Pen, FileText, Building2, Users, Calendar,
   Ruler, Scissors, Paperclip, Notebook, Badge, Award, Trophy,
-  
+
   // Loisirs & Divertissement
   Music, Film, Book, Gamepad2, Palette, Mountain,
   Guitar, Mic, Dice1, Dice2, Dice3,
-  
+
   // Services & Utilités
   Zap, Droplets, Wifi, MessageSquare, Mail, Cloud, Lock,
   Plug, Power, Settings, Trash, Recycle, Inbox, Send, Download, Upload,
-  
+
   // Famille & Enfants
   Baby, Users2, PartyPopper, Gamepad as GameIcon, Backpack,
-  
+
   // Autres
   Star, Flag, Clock, Bell, Search, X, ChevronRight,
   Plus, Minus, Check, AlertCircle, Info, HelpCircle, Sun, Moon
@@ -239,27 +239,27 @@ export const ALL_ICONS: IconOption[] = [
 
 const CATEGORIES = [
   { id: 'all', name: 'Tous', icons: ALL_ICONS },
-  { id: 'maison', name: '🏠 Maison', icons: ALL_ICONS.filter(icon => 
+  { id: 'maison', name: '🏠 Maison', icons: ALL_ICONS.filter(icon =>
     ['home', 'building', 'key', 'bed', 'sofa', 'lightbulb', 'thermometer', 'shield', 'hammer', 'paint-bucket', 'armchair', 'bath', 'fence', 'heater', 'lamp', 'wrench', 'drill', 'flashlight'].includes(icon.name)) },
-  { id: 'transport', name: '🚗 Transport', icons: ALL_ICONS.filter(icon => 
+  { id: 'transport', name: '🚗 Transport', icons: ALL_ICONS.filter(icon =>
     ['car', 'plane', 'train', 'bus', 'bike', 'ship', 'fuel', 'map-pin', 'compass', 'truck', 'plane-takeoff', 'plane-landing', 'navigation', 'anchor'].includes(icon.name)) },
-  { id: 'nourriture', name: '🍕 Nourriture', icons: ALL_ICONS.filter(icon => 
+  { id: 'nourriture', name: '🍕 Nourriture', icons: ALL_ICONS.filter(icon =>
     ['utensils', 'coffee', 'pizza', 'apple', 'chef-hat', 'wine', 'cake', 'fish', 'beef', 'milk', 'cherry'].includes(icon.name)) },
-  { id: 'shopping', name: '🛍️ Shopping', icons: ALL_ICONS.filter(icon => 
+  { id: 'shopping', name: '🛍️ Shopping', icons: ALL_ICONS.filter(icon =>
     ['shopping-cart', 'shopping-bag', 'store', 'tag', 'package', 'gift', 'shirt', 'gem', 'receipt', 'ticket', 'shopping-basket', 'watch', 'glasses', 'crown'].includes(icon.name)) },
-  { id: 'tech', name: '📱 Tech', icons: ALL_ICONS.filter(icon => 
+  { id: 'tech', name: '📱 Tech', icons: ALL_ICONS.filter(icon =>
     ['laptop', 'phone', 'tablet', 'headphones', 'camera', 'monitor', 'printer', 'router', 'gamepad', 'tv', 'mouse', 'keyboard', 'cpu', 'hard-drive', 'battery', 'bluetooth', 'speaker'].includes(icon.name)) },
-  { id: 'sante', name: '❤️ Santé', icons: ALL_ICONS.filter(icon => 
+  { id: 'sante', name: '❤️ Santé', icons: ALL_ICONS.filter(icon =>
     ['heart', 'activity', 'dumbbell', 'stethoscope', 'pill', 'eye', 'smile', 'footprints', 'bandage', 'syringe'].includes(icon.name)) },
-  { id: 'finance', name: '💰 Finance', icons: ALL_ICONS.filter(icon => 
+  { id: 'finance', name: '💰 Finance', icons: ALL_ICONS.filter(icon =>
     ['credit-card', 'banknote', 'wallet', 'piggy-bank', 'trending-up', 'trending-down', 'dollar-sign', 'euro', 'calculator', 'coins', 'landmark', 'hand-coins'].includes(icon.name)) },
-  { id: 'travail', name: '💼 Travail', icons: ALL_ICONS.filter(icon => 
+  { id: 'travail', name: '💼 Travail', icons: ALL_ICONS.filter(icon =>
     ['briefcase', 'graduation-cap', 'book-open', 'pen', 'file-text', 'building-2', 'users', 'calendar', 'ruler', 'scissors', 'paperclip', 'notebook', 'badge', 'award', 'trophy'].includes(icon.name)) },
-  { id: 'loisirs', name: '🎮 Loisirs', icons: ALL_ICONS.filter(icon => 
+  { id: 'loisirs', name: '🎮 Loisirs', icons: ALL_ICONS.filter(icon =>
     ['music', 'film', 'book', 'gamepad-2', 'palette', 'mountain', 'guitar', 'mic', 'dice-1', 'dice-2', 'dice-3'].includes(icon.name)) },
-  { id: 'services', name: '⚡ Services', icons: ALL_ICONS.filter(icon => 
+  { id: 'services', name: '⚡ Services', icons: ALL_ICONS.filter(icon =>
     ['zap', 'droplets', 'wifi-service', 'message-square', 'mail', 'cloud', 'lock', 'plug', 'power', 'settings', 'trash', 'recycle', 'inbox', 'send', 'download', 'upload'].includes(icon.name)) },
-  { id: 'famille', name: '👶 Famille', icons: ALL_ICONS.filter(icon => 
+  { id: 'famille', name: '👶 Famille', icons: ALL_ICONS.filter(icon =>
     ['baby', 'users-2', 'party-popper', 'game-icon', 'backpack'].includes(icon.name)) },
 ];
 
@@ -271,7 +271,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
   if (!isOpen) return null;
 
   const currentCategory = CATEGORIES.find(cat => cat.id === selectedCategory) || CATEGORIES[0];
-  const filteredIcons = currentCategory.icons.filter(icon => 
+  const filteredIcons = currentCategory.icons.filter(icon =>
     icon.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -284,10 +284,10 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-2 md:p-4"
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-2 md:p-4"
     >
-      <div className="bg-card rounded-xl shadow-2xl w-full h-full md:h-[80vh] md:max-h-[600px] md:max-w-4xl overflow-hidden flex flex-col">
+      <div className="bg-[#1a1a1f] border border-border rounded-xl shadow-2xl w-full h-full md:h-[80vh] md:max-h-[700px] md:max-w-5xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-border">
           <h2 className="text-lg md:text-xl font-bold text-foreground">Choisir une icône</h2>
@@ -308,7 +308,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
               placeholder="Rechercher une icône..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 md:py-3 bg-card-elevated border border-border rounded-lg text-foreground placeholder-text-muted-foreground outline-none text-sm md:text-base"
+              className="w-full pl-10 pr-4 py-2 md:py-3 bg-[rgba(255,255,255,0.05)] border border-border rounded-lg text-foreground placeholder:text-muted-foreground outline-none text-sm md:text-base"
             />
           </div>
         </div>
@@ -317,14 +317,14 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
         <div className="md:hidden border-b border-border">
           <button
             onClick={() => setShowMobileCategories(!showMobileCategories)}
-            className="w-full flex items-center justify-between p-4 text-foreground hover:bg-card-elevated transition-colors"
+            className="w-full flex items-center justify-between p-4 text-foreground hover:bg-[rgba(255,255,255,0.05)] transition-colors"
           >
             <span className="font-medium">{currentCategory.name} ({currentCategory.icons.length})</span>
             <ChevronRight className={`h-4 w-4 transition-transform ${showMobileCategories ? 'rotate-90' : ''}`} />
           </button>
-          
+
           {showMobileCategories && (
-            <div className="border-t border-border bg-card-elevated max-h-48 overflow-y-auto">
+            <div className="border-t border-border bg-[rgba(255,255,255,0.03)] max-h-48 overflow-y-auto">
               {CATEGORIES.map((category) => (
                 <button
                   key={category.id}
@@ -335,7 +335,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
                   className={`w-full text-left px-4 py-3 text-sm transition-colors ${
                     selectedCategory === category.id
                       ? 'bg-primary text-white'
-                      : 'text-muted-foreground hover:bg-card hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-[rgba(255,255,255,0.05)]'
                   }`}
                 >
                   {category.name}
@@ -350,7 +350,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
 
         <div className="flex flex-1 overflow-hidden">
           {/* Desktop Categories Sidebar */}
-          <div className="hidden md:block w-48 border-r border-border bg-card-elevated overflow-y-auto">
+          <div className="hidden md:block w-48 border-r border-border bg-[rgba(255,255,255,0.03)] overflow-y-auto">
             <div className="p-2">
               {CATEGORIES.map((category) => (
                 <button
@@ -360,7 +360,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     selectedCategory === category.id
                       ? 'bg-primary text-white'
-                      : 'text-muted-foreground hover:bg-card hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-[rgba(255,255,255,0.05)]'
                   }`}
                 >
                   {category.name}
@@ -373,8 +373,8 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
           </div>
 
           {/* Icons Grid */}
-          <div className="flex-1 p-3 md:p-4 overflow-y-auto">
-            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3">
+          <div className="flex-1 p-3 md:p-6 overflow-y-auto">
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 gap-2 md:gap-3">
               {filteredIcons.map((icon) => (
                 <button
                   key={icon.name}
@@ -382,7 +382,7 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
                   className={`p-2 md:p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 active:scale-95 ${
                     selectedIcon === icon.name
                       ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-primary hover:bg-card-elevated'
+                      : 'border-border hover:border-primary hover:bg-[rgba(255,255,255,0.05)]'
                   }`}
                   title={icon.name}
                 >
@@ -407,4 +407,4 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
   );
 };
 
-export default IconModal; 
+export default IconModal;

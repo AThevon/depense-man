@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Settings, List, BarChart3, TrendingUp, CreditCard } from 'lucide-react';
@@ -18,19 +17,6 @@ export function AppHeader() {
   const router = useRouter();
 
   const activeTab = tabs.find(tab => tab.href === pathname)?.id || 'list';
-
-  // Initialisation du thème
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[rgba(10,10,11,0.8)] backdrop-blur-xl border-b border-border">
@@ -72,7 +58,7 @@ export function AppHeader() {
                     {isActive && (
                       <motion.div
                         layoutId="header-pill"
-                        className="absolute inset-0 bg-primary rounded-md"
+                        className="absolute inset-0 gradient-active rounded-md"
                         transition={{
                           type: 'spring',
                           stiffness: 500,

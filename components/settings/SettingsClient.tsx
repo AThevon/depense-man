@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Sun, Moon, Monitor, Copy, Check, LogOut, Github, Info } from 'lucide-react';
+import { useState } from 'react';
+import { Copy, Check, LogOut, Github, Info } from 'lucide-react';
 import { useExpensesStore } from '@/lib/store/expenses';
 import { logout } from '@/lib/auth/actions';
 
@@ -14,26 +14,7 @@ interface SettingsClientProps {
 
 export function SettingsClient({ user }: SettingsClientProps) {
   const { items } = useExpensesStore();
-  const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('dark');
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
-    if (saved) setTheme(saved);
-  }, []);
-
-  const handleThemeChange = (newTheme: 'light' | 'dark' | 'auto') => {
-    setTheme(newTheme);
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else if (newTheme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      prefersDark ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('theme', newTheme);
-  };
 
   const handleCopyJSON = async () => {
     const json = JSON.stringify(items, null, 2);
@@ -51,31 +32,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
         <div className="glass rounded-2xl p-4">
           <p className="text-xs text-muted-foreground mb-1">Connecté en tant que</p>
           <p className="text-sm font-medium">{user.email || 'N/A'}</p>
-        </div>
-
-        {/* Theme */}
-        <div className="glass rounded-2xl p-4 space-y-3">
-          <p className="text-sm font-medium">Thème</p>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: 'light' as const, icon: Sun, label: 'Clair' },
-              { id: 'dark' as const, icon: Moon, label: 'Sombre' },
-              { id: 'auto' as const, icon: Monitor, label: 'Auto' },
-            ].map(t => (
-              <button
-                key={t.id}
-                onClick={() => handleThemeChange(t.id)}
-                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-colors ${
-                  theme === t.id
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-[rgba(255,255,255,0.08)] text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <t.icon className="h-4 w-4" />
-                <span className="text-xs font-medium">{t.label}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Export JSON */}

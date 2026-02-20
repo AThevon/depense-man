@@ -33,7 +33,7 @@ export function BottomTabBar() {
                 {isActive && (
                   <motion.div
                     layoutId="tab-indicator"
-                    className="absolute -top-px left-3 right-3 h-0.5 rounded-full bg-primary"
+                    className="absolute -top-px left-3 right-3 h-0.5 rounded-full gradient-active"
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 )}

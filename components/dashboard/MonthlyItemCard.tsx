@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Edit3, Trash2 } from 'lucide-react';
+import { Edit3, Trash2, CircleCheck } from 'lucide-react';
 import { MonthlyItem, MonthlyExpense } from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
@@ -119,7 +119,7 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false, isPast = fal
 
       <div
         ref={cardRef}
-        className={`flex items-center gap-3 px-2 py-3 border-b border-[rgba(255,255,255,0.05)] select-none group cursor-pointer transition-opacity ${isPast ? 'opacity-60' : ''}`}
+        className="flex items-center gap-3 px-2 py-3 border-b border-[rgba(255,255,255,0.05)] select-none group cursor-pointer"
         style={{
           transform: `translateX(-${currentX}px)`,
         }}
@@ -140,9 +140,14 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false, isPast = fal
           />
         </div>
 
-        {/* Nom + sous-texte crédit */}
+        {/* Nom + sous-texte crédit + coche passé */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+            {isPast && (
+              <CircleCheck className="h-3.5 w-3.5 text-success flex-shrink-0" />
+            )}
+          </div>
           {isCredit && creditInfo && creditInfo.isActive && (
             <p className="text-xs text-muted-foreground">
               Crédit &middot; {creditInfo.remainingPayments} restants
@@ -202,7 +207,7 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false, isPast = fal
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-card rounded-lg p-6 text-center space-y-4 shadow-xl border border-border"
+              className="bg-[#1a1a1f] rounded-lg p-6 text-center space-y-4 shadow-xl border border-border"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}

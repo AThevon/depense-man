@@ -7,14 +7,13 @@ import { fr } from 'date-fns/locale';
 import { useExpensesStore } from '@/lib/store/expenses';
 import { MonthlyExpense, MonthlyIncome } from '@/lib/types';
 import { generateExpensePredictions, calculateCreditInfoAtDate } from '@/lib/creditCalculations';
+import { formatEuro } from '@/lib/format';
 import { Icon } from '@/components/ui/Icon';
 
 const ResponsiveLine = dynamic(
   () => import('@nivo/line').then((m) => m.ResponsiveLine),
   { ssr: false }
 );
-
-import { formatEuro } from '@/lib/format';
 
 export function ProjectionsPage() {
   const { items } = useExpensesStore();
@@ -39,8 +38,6 @@ export function ProjectionsPage() {
         if (!expense.isCredit) return false;
         const info = calculateCreditInfoAtDate(expense, monthDate);
         if (!info) return false;
-        // Le credit se termine ce mois si remainingPayments === 0
-        // mais etait actif le mois precedent
         if (i === 0) return false;
         const prevMonth = addMonths(new Date(), i - 1);
         const prevInfo = calculateCreditInfoAtDate(expense, prevMonth);
@@ -87,7 +84,7 @@ export function ProjectionsPage() {
       },
       {
         id: 'Reste',
-        color: '#6366f1',
+        color: '#f97316',
         data: projections.map((p) => ({ x: p.month, y: Math.round(p.reste) })),
       },
     ],
@@ -97,56 +94,50 @@ export function ProjectionsPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-[960px] px-4 md:px-6 py-4 space-y-6">
-        {/* Graphique 12 mois */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Projections 12 mois</h2>
-          <div className="glass rounded-2xl p-4" style={{ height: 300 }}>
-            <ResponsiveLine
-              data={chartData}
-              margin={{ top: 20, right: 20, bottom: 40, left: 60 }}
-              xScale={{ type: 'point' }}
-              yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
-              colors={({ id }) => {
-                if (id === 'Revenus') return '#34d399';
-                if (id === 'Depenses') return '#f87171';
-                return '#6366f1';
-              }}
-              theme={{
-                text: { fill: '#71717a' },
-                grid: { line: { stroke: 'rgba(255,255,255,0.05)' } },
-                axis: {
-                  ticks: { text: { fill: '#71717a', fontSize: 11 } },
-                },
-                crosshair: { line: { stroke: '#6366f1' } },
-              }}
-              enablePoints={false}
-              enableGridX={false}
-              curve="monotoneX"
-              useMesh
-              legends={[
-                {
-                  anchor: 'top-left',
-                  direction: 'row',
-                  translateY: -15,
-                  itemWidth: 80,
-                  itemHeight: 12,
-                  itemTextColor: '#71717a',
-                  symbolSize: 8,
-                  symbolShape: 'circle',
-                },
-              ]}
-            />
+        {/* Section 1: Prochaines fins de credits */}
+        {creditEvents.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold mb-4">
+              Prochaines fins de crédits
+            </h2>
+            <div className="space-y-2">
+              {creditEvents.map(({ credit, info }) => {
+                const monthsLeft = info!.remainingPayments;
+                return (
+                  <div
+                    key={credit.id}
+                    className="glass rounded-2xl p-4 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        name={credit.icon}
+                        className="h-5 w-5 text-warning"
+                      />
+                      <div>
+                        <p className="text-sm font-medium">{credit.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Fin dans {monthsLeft} mois
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm font-medium text-success">
+                      -{formatEuro(info!.monthlyAmount)}/mois
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Tableau previsionnel */}
+        {/* Section 2: Tableau previsionnel */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Previsionnel</h2>
+          <h2 className="text-lg font-semibold mb-4">Prévisionnel</h2>
           <div className="glass rounded-2xl divide-y divide-[rgba(255,255,255,0.05)]">
             {/* En-tete */}
             <div className="grid grid-cols-4 gap-2 p-3 text-xs text-muted-foreground font-medium">
               <span>Mois</span>
-              <span className="text-right">Depenses</span>
+              <span className="text-right">Dépenses</span>
               <span className="text-right">Revenus</span>
               <span className="text-right">Reste</span>
             </div>
@@ -185,41 +176,47 @@ export function ProjectionsPage() {
           </div>
         </div>
 
-        {/* Prochaines fins de credits */}
-        {creditEvents.length > 0 && (
-          <div>
-            <h2 className="text-lg font-semibold mb-4">
-              Prochaines fins de credits
-            </h2>
-            <div className="space-y-2">
-              {creditEvents.map(({ credit, info }) => {
-                const monthsLeft = info!.remainingPayments;
-                return (
-                  <div
-                    key={credit.id}
-                    className="glass rounded-2xl p-4 flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon
-                        name={credit.icon}
-                        className="h-5 w-5 text-warning"
-                      />
-                      <div>
-                        <p className="text-sm font-medium">{credit.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Fin dans {monthsLeft} mois
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-sm font-medium text-success">
-                      -{formatEuro(info!.monthlyAmount)}/mois
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+        {/* Section 3: Graphique 12 mois */}
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Projections 12 mois</h2>
+          <div className="glass rounded-2xl p-4" style={{ height: 300 }}>
+            <ResponsiveLine
+              data={chartData}
+              margin={{ top: 20, right: 20, bottom: 40, left: 60 }}
+              xScale={{ type: 'point' }}
+              yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
+              colors={({ id }) => {
+                if (id === 'Revenus') return '#34d399';
+                if (id === 'Depenses') return '#f87171';
+                return '#f97316';
+              }}
+              theme={{
+                text: { fill: '#71717a' },
+                grid: { line: { stroke: 'rgba(255,255,255,0.05)' } },
+                axis: {
+                  ticks: { text: { fill: '#71717a', fontSize: 11 } },
+                },
+                crosshair: { line: { stroke: '#f97316' } },
+              }}
+              enablePoints={false}
+              enableGridX={false}
+              curve="monotoneX"
+              useMesh
+              legends={[
+                {
+                  anchor: 'top-left',
+                  direction: 'row',
+                  translateY: -15,
+                  itemWidth: 80,
+                  itemHeight: 12,
+                  itemTextColor: '#71717a',
+                  symbolSize: 8,
+                  symbolShape: 'circle',
+                },
+              ]}
+            />
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

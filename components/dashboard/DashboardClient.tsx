@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { MonthlyItem, MonthlyExpense, getPayCyclePosition, calculateCreditInfo } from '@/lib/types';
 import { useExpensesStore } from '@/lib/store/expenses';
+import { formatEuro } from '@/lib/format';
 import { motion } from 'motion/react';
 import MonthlyItemCard from './MonthlyItemCard';
 import { ItemTypeSelector } from '@/components/forms/ItemTypeSelector';
@@ -10,8 +11,6 @@ import { SimpleExpenseForm } from '@/components/forms/SimpleExpenseForm';
 import { CreditExpenseForm } from '@/components/forms/CreditExpenseForm';
 import { SimpleIncomeForm } from '@/components/forms/SimpleIncomeForm';
 import TimeIndicator from './TimeIndicator';
-
-import { formatEuro } from '@/lib/format';
 
 const filters = [
   { id: 'all', label: 'Tout' },
@@ -157,14 +156,14 @@ export function DashboardClient() {
               onClick={() => setFilter(f.id)}
               className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
                 filter === f.id
-                  ? 'text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'text-white'
+                  : 'text-foreground/60 hover:text-foreground'
               }`}
             >
               {filter === f.id && (
                 <motion.div
                   layoutId="filter-pill"
-                  className="absolute inset-0 bg-primary rounded-lg"
+                  className="absolute inset-0 gradient-active rounded-lg"
                   transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }}
                 />
               )}
