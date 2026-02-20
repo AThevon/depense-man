@@ -283,25 +283,25 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-end md:items-center md:justify-center z-[100] md:p-8"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4 md:p-10"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-[#1a1a1f] border border-border rounded-t-2xl md:rounded-2xl shadow-2xl w-full h-[85vh] md:h-[85vh] md:max-w-4xl overflow-hidden flex flex-col">
+      <div className="bg-[#1a1a1f] border border-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b border-border shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="text-lg font-semibold text-foreground">Choisir une icône</h2>
           <button
             onClick={onClose}
-            className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[rgba(255,255,255,0.08)] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Search + Category pills (desktop) */}
-        <div className="px-4 py-3 md:px-6 md:py-4 border-b border-border space-y-3 shrink-0">
+        {/* Search + Category pills */}
+        <div className="px-5 py-4 border-b border-border space-y-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Rechercher une icône..."
@@ -311,7 +311,6 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
             />
           </div>
 
-          {/* Category pills — scrollable horizontal */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             {CATEGORIES.map((category) => (
               <button
@@ -330,21 +329,21 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
           </div>
         </div>
 
-        {/* Icons Grid */}
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
-          <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
+        {/* Icons Grid — scrollable */}
+        <div className="overflow-y-auto p-5">
+          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
             {filteredIcons.map((icon) => (
               <button
                 key={icon.name}
                 onClick={() => handleIconSelect(icon.name)}
-                className={`aspect-square flex items-center justify-center rounded-xl border transition-all duration-150 hover:scale-105 active:scale-95 ${
+                className={`aspect-square flex items-center justify-center rounded-xl transition-all duration-150 hover:scale-110 active:scale-95 ${
                   selectedIcon === icon.name
-                    ? 'border-primary bg-primary/15 text-primary'
-                    : 'border-transparent bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] text-foreground'
+                    ? 'bg-primary/15 text-primary ring-1 ring-primary'
+                    : 'bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.1)] text-foreground'
                 }`}
                 title={icon.name}
               >
-                <icon.icon className="h-5 w-5 md:h-6 md:w-6" />
+                <icon.icon className="h-5 w-5" />
               </button>
             ))}
           </div>
@@ -353,7 +352,6 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
             <div className="text-center py-12 text-muted-foreground">
               <Search className="h-10 w-10 mx-auto mb-3 opacity-50" />
               <p className="text-sm">Aucune icône trouvée</p>
-              <p className="text-xs mt-1">Essayez un autre terme de recherche</p>
             </div>
           )}
         </div>
