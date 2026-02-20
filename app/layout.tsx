@@ -86,11 +86,23 @@ export default function RootLayout({
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('SW registered: ', registration);
+                    .then(function(reg) {
+                      // Vérifier les mises à jour toutes les 60s
+                      setInterval(function() { reg.update(); }, 60000);
+
+                      reg.addEventListener('updatefound', function() {
+                        var newWorker = reg.installing;
+                        if (!newWorker) return;
+                        newWorker.addEventListener('statechange', function() {
+                          if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+                            // Nouvelle version activée — reload automatique
+                            window.location.reload();
+                          }
+                        });
+                      });
                     })
-                    .catch(function(registrationError) {
-                      console.log('SW registration failed: ', registrationError);
+                    .catch(function(err) {
+                      console.log('SW registration failed:', err);
                     });
                 });
               }
