@@ -3,28 +3,17 @@
 import { redirect } from 'next/navigation';
 import { createSession, destroySession } from './session';
 
-interface LoginState {
-  error?: string;
-  success?: boolean;
-}
-
 /**
  * Server Action pour login
  * Attend un idToken Firebase généré côté client
  */
-export async function login(prevState: LoginState | null, formData: FormData): Promise<LoginState> {
-  const idToken = formData.get('idToken') as string;
-
+export async function login(idToken: string): Promise<{ error?: string; success?: boolean }> {
   if (!idToken) {
     return { error: 'Token manquant' };
   }
 
   try {
-    // Créer la session serveur
     await createSession(idToken);
-
-    // Retourner success au lieu de redirect
-    // Le redirect sera fait côté client
     return { success: true };
   } catch (error) {
     console.error('Login error:', error);
