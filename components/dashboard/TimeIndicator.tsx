@@ -1,28 +1,14 @@
-import { Calendar, Clock } from 'lucide-react';
-
-interface TimeIndicatorProps {
-  className?: string;
-}
-
-const TimeIndicator = ({ className = '' }: TimeIndicatorProps) => {
-  const today = new Date();
-  const dayOfMonth = today.getDate();
-  
+const TimeIndicator = ({ day, className = '' }: { day?: number; className?: string }) => {
+  const displayDay = day || new Date().getDate();
   return (
-    <div className={`flex items-center justify-center py-4 ${className}`}>
-      <div className="flex items-center space-x-3 w-full max-w-md">
-        <div className="flex-1 h-px bg-border"></div>
-        <div className="flex items-center space-x-2 px-3 py-2 bg-primary/10 rounded-full border border-primary/20">
-          <Clock className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-primary">
-            Aujourd&apos;hui - Le {dayOfMonth}
-          </span>
-          <Calendar className="h-4 w-4 text-primary" />
-        </div>
-        <div className="flex-1 h-px bg-border"></div>
-      </div>
+    <div className={`flex items-center gap-3 py-3 ${className}`}>
+      <div className="flex-1 h-px bg-primary/30" />
+      <span className="text-xs font-medium text-primary whitespace-nowrap">
+        Aujourd&apos;hui &mdash; J{displayDay}
+      </span>
+      <div className="flex-1 h-px bg-primary/30" />
     </div>
   );
 };
 
-export default TimeIndicator; 
+export default TimeIndicator;

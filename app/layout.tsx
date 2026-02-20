@@ -1,22 +1,13 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import { StoreInitializer } from "@/components/providers/StoreInitializer";
 import { AppLayout } from "@/components/layout/AppLayout";
 import "./globals.css";
 
-// Font pour headers, titres, boutons (moderne et géométrique)
-const fontDisplay = Space_Grotesk({
-  variable: "--font-display",
+const fontOutfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-// Font pour body, paragraphes (lisible et clean)
-const fontBody = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -61,7 +52,8 @@ export function generateViewport() {
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
-    themeColor: "#232323",
+    viewportFit: "cover",
+    themeColor: "#0a0a0b",
   };
 }
 
@@ -77,12 +69,12 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="D-Man" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#232323" />
+        <meta name="msapplication-TileColor" content="#0a0a0b" />
         <meta name="msapplication-tap-highlight" content="no" />
         <link rel="apple-touch-icon" href="/apple-icon.png" />
-        <link rel="mask-icon" href="/web-app-manifest-192x192.png" color="#232323" />
+        <link rel="mask-icon" href="/web-app-manifest-192x192.png" color="#0a0a0b" />
       </head>
-      <body className={`${fontDisplay.variable} ${fontBody.variable} font-body antialiased`}>
+      <body className={`${fontOutfit.variable} antialiased`}>
         <StoreInitializer>
           <AppLayout>
             {children}

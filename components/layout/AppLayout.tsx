@@ -1,35 +1,20 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { AppHeader } from './AppHeader';
-import Footer from '@/components/ui/Footer';
-import { useExpensesStore } from '@/lib/store/expenses';
+import { BottomTabBar } from './BottomTabBar';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const items = useExpensesStore((state) => state.items);
-  const calculation = useExpensesStore((state) => state.calculation);
-
-  // Ne pas afficher le header sur la page de login uniquement
-  const showHeader = !pathname.startsWith('/login');
-
-  const handleTabChange = (tab: 'dashboard' | 'stats') => {
-    if (tab === 'dashboard') {
-      router.push('/');
-    } else {
-      router.push('/stats');
-    }
-  };
-
-  // Déterminer le tab actif basé sur le pathname
-  const currentTab = pathname === '/stats' ? 'stats' : 'dashboard';
+  const showChrome = !pathname.startsWith('/login');
 
   return (
     <>
-      {showHeader && <AppHeader currentTab={currentTab} onTabChange={handleTabChange} />}
-      {children}
-      <Footer items={items} calculation={calculation} />
+      {showChrome && <AppHeader />}
+      <main className={showChrome ? 'pb-20 md:pb-0' : ''}>
+        {children}
+      </main>
+      {showChrome && <BottomTabBar />}
     </>
   );
 }

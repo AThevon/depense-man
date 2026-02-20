@@ -54,7 +54,7 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md glass rounded-2xl">
       <CardHeader className="space-y-4">
         {/* Logo */}
         <div className="flex justify-center">
@@ -69,7 +69,7 @@ export function LoginForm() {
 
         {/* Title */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-foreground font-display tracking-tight">
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
             Dépense-Man
           </h1>
           <p className="text-muted-foreground">

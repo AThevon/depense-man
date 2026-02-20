@@ -3,10 +3,10 @@
 import { useEffect } from 'react';
 import { useExpensesStore } from '@/lib/store/expenses';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
-import { StatsPage as StatsPageContent } from '@/components/stats/StatsPageWithWorker';
+import { ProjectionsPage as ProjectionsPageContent } from '@/components/projections/ProjectionsPage';
 import { auth } from '@/lib/firebase';
 
-export default function StatsPage() {
+export default function ProjectionsPage() {
   const { isLoading, initListener, reset } = useExpensesStore();
 
   useEffect(() => {
@@ -25,5 +25,5 @@ export default function StatsPage() {
     return <DashboardSkeleton />;
   }
 
-  return <StatsPageContent />;
+  return <ProjectionsPageContent />;
 }
