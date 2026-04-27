@@ -58,7 +58,7 @@ export function LoginForm() {
             alt="Dépense-Man Logo"
             width={80}
             height={80}
-            className="object-contain w-20 h-20"
+            className="rounded-[22%] object-cover w-20 h-20"
           />
         </div>
 

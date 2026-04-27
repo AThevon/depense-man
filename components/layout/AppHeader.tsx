@@ -30,7 +30,7 @@ export function AppHeader() {
                 alt="Dépense-Man Logo"
                 width={40}
                 height={40}
-                className="object-contain"
+                className="rounded-[22%] object-cover"
                 priority
               />
             </div>
