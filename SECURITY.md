@@ -103,13 +103,13 @@ npm audit fix
 ### Mettre à jour toutes les dépendances
 
 ```bash
-npm update
+pnpm update
 ```
 
 ### Mettre à jour React/Next.js spécifiquement
 
 ```bash
-npm install react@latest react-dom@latest next@latest
+pnpm add react@latest react-dom@latest next@latest
 ```
 
 ---

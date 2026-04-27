@@ -80,17 +80,17 @@ export function CreditsPage() {
           <div className="grid grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-muted-foreground">Crédits actifs</p>
-              <p className="text-xl font-bold tabular-nums">{calculation.activeCredits.count}</p>
+              <p className="font-display text-xl font-bold tabular-nums">{calculation.activeCredits.count}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Total mensuel</p>
-              <p className="text-xl font-bold tabular-nums text-warning">
+              <p className="font-display text-xl font-bold tabular-nums text-warning">
                 {formatEuro(calculation.activeCredits.totalMonthly)}
               </p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Total restant</p>
-              <p className="text-xl font-bold tabular-nums">
+              <p className="font-display text-xl font-bold tabular-nums">
                 {formatEuro(calculation.activeCredits.totalRemaining)}
               </p>
             </div>

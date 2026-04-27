@@ -1,15 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { X } from 'lucide-react';
 import { MonthlyItem } from '@/lib/types';
 import { useExpensesStore } from '@/lib/store/expenses';
 import { auth } from '@/lib/firebase';
 import IconSelector from '@/components/ui/IconSelector';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 
 interface SimpleExpenseFormProps {
   item?: MonthlyItem;
@@ -32,7 +31,6 @@ export function SimpleExpenseForm({ item, onSuccess, onCancel }: SimpleExpenseFo
     e.preventDefault();
     setError('');
 
-    // Validation
     if (!name.trim() || !amount || !dayOfMonth || !icon) {
       setError('Tous les champs sont requis');
       return;
@@ -74,98 +72,88 @@ export function SimpleExpenseForm({ item, onSuccess, onCancel }: SimpleExpenseFo
     }
   };
 
+  const formId = 'simple-expense-form';
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <h2 className="text-xl font-bold">
-            {isEditing ? 'Modifier la dépense' : 'Nouvelle dépense'}
-          </h2>
-          <Button variant="ghost" size="sm" onClick={onCancel} >
-            <X className="h-4 w-4" />
+    <BottomSheet
+      onClose={() => onCancel?.()}
+      title={isEditing ? 'Modifier la dépense' : 'Nouvelle dépense'}
+      footer={
+        <div className="flex gap-2.5">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={loading}
+            className="flex-1 h-12"
+          >
+            Annuler
           </Button>
-        </CardHeader>
+          <Button
+            type="submit"
+            form={formId}
+            disabled={loading}
+            className="flex-1 h-12"
+          >
+            {loading ? 'Enregistrement...' : isEditing ? 'Modifier' : 'Ajouter'}
+          </Button>
+        </div>
+      }
+    >
+      <form id={formId} onSubmit={handleSubmit} className="px-5 pb-5 pt-1 space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Nom de la dépense</Label>
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ex: Courses, Essence..."
+            inputMode="text"
+            autoComplete="off"
+            required
+          />
+        </div>
 
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nom */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Nom de la dépense</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Courses, Essence..."
-                
-                required
-              />
-            </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="amount">Montant (€)</Label>
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              inputMode="decimal"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0,00"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="dayOfMonth">Jour</Label>
+            <Input
+              id="dayOfMonth"
+              type="number"
+              min="1"
+              max="31"
+              inputMode="numeric"
+              value={dayOfMonth}
+              onChange={(e) => setDayOfMonth(e.target.value)}
+              placeholder="1-31"
+              required
+            />
+          </div>
+        </div>
 
-            {/* Montant */}
-            <div className="space-y-2">
-              <Label htmlFor="amount">Montant (€)</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                
-                required
-              />
-            </div>
+        <div>
+          <IconSelector selectedIcon={icon} onIconSelect={setIcon} />
+        </div>
 
-            {/* Jour du mois */}
-            <div className="space-y-2">
-              <Label htmlFor="dayOfMonth">Jour du mois</Label>
-              <Input
-                id="dayOfMonth"
-                type="number"
-                min="1"
-                max="31"
-                value={dayOfMonth}
-                onChange={(e) => setDayOfMonth(e.target.value)}
-                placeholder="1-31"
-                
-                required
-              />
-            </div>
-
-            {/* Icône */}
-            <div className="space-y-2">
-              <IconSelector
-                selectedIcon={icon}
-                onIconSelect={setIcon}
-                
-              />
-            </div>
-
-            {/* Erreur */}
-            {error && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive text-destructive text-sm">
-                {error}
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                
-                className="flex-1"
-              >
-                Annuler
-              </Button>
-              <Button type="submit"  className="flex-1">
-                {loading ? 'Enregistrement...' : isEditing ? 'Modifier' : 'Ajouter'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+        {error && (
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/40 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+      </form>
+    </BottomSheet>
   );
 }

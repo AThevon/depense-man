@@ -35,7 +35,7 @@ Une application PWA moderne pour gérer vos finances mensuelles avec Firebase et
 
 2. **Installer les dépendances**
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Configuration Firebase**
@@ -83,23 +83,23 @@ Une application PWA moderne pour gérer vos finances mensuelles avec Firebase et
 
 ```bash
 # Lancer le serveur de développement
-npm run dev
+pnpm dev
 
 # Build de production
-npm run build
+pnpm build
 
 # Lancer en production
-npm start
+pnpm start
 
 # Linter
-npm run lint
+pnpm lint
 ```
 
 ## 🌐 Déploiement sur Vercel
 
 1. **Connecter à Vercel**
    ```bash
-   npm install -g vercel
+   pnpm add -g vercel
    vercel login
    vercel
    ```
@@ -191,7 +191,7 @@ depense-man/
 - Vérifier que l'email est dans la liste autorisée
 
 ### Problèmes de build
-- Nettoyer le cache : `rm -rf .next && npm run build`
+- Nettoyer le cache : `rm -rf .next && pnpm build`
 - Vérifier les types TypeScript
 - Contrôler les imports/exports
 

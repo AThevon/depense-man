@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useExpensesStore } from '@/lib/store/expenses';
-import { MonthlyItem, MonthlyExpense, MonthlyIncome } from '@/lib/types';
+import { MonthlyExpense, MonthlyIncome } from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Icon } from '@/components/ui/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -185,7 +185,7 @@ export const ExpenseDetailClient = ({ expenseId }: ExpenseDetailClientProps) => 
 
                 {/* Nom */}
                 <motion.h1
-                  className="text-4xl font-bold"
+                  className="font-title text-4xl"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
@@ -233,7 +233,7 @@ export const ExpenseDetailClient = ({ expenseId }: ExpenseDetailClientProps) => 
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.5, type: 'spring' }}
                 >
-                  <div className={`text-6xl font-black ${isExpense ? 'text-destructive' : 'text-success'}`}>
+                  <div className={`font-display text-6xl font-black tabular-nums ${isExpense ? 'text-destructive' : 'text-success'}`}>
                     {isExpense ? '-' : '+'}{formatAmount(item.amount)}
                   </div>
                   {creditInfo?.monthlyAmount && (
@@ -262,7 +262,7 @@ export const ExpenseDetailClient = ({ expenseId }: ExpenseDetailClientProps) => 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Le {item.dayOfMonth}</div>
+              <div className="font-display text-2xl font-bold tabular-nums">Le {item.dayOfMonth}</div>
               <div className="text-sm text-muted-foreground mt-1">de chaque mois</div>
             </CardContent>
           </Card>
@@ -275,7 +275,7 @@ export const ExpenseDetailClient = ({ expenseId }: ExpenseDetailClientProps) => 
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatAmount(item.amount)}</div>
+              <div className="font-display text-2xl font-bold tabular-nums">{formatAmount(item.amount)}</div>
               <div className="text-sm text-muted-foreground mt-1">par mois</div>
             </CardContent>
           </Card>
@@ -310,7 +310,7 @@ export const ExpenseDetailClient = ({ expenseId }: ExpenseDetailClientProps) => 
                       <DollarSign className="h-4 w-4" />
                       Mensualité
                     </div>
-                    <div className="text-xl font-bold">{formatAmount(creditInfo.monthlyAmount)}</div>
+                    <div className="font-display text-xl font-bold tabular-nums">{formatAmount(creditInfo.monthlyAmount)}</div>
                   </div>
 
                   <div className="space-y-1">
@@ -475,27 +475,32 @@ export const ExpenseDetailClient = ({ expenseId }: ExpenseDetailClientProps) => 
       )}
 
       {/* Modales d'édition */}
-      {showEditForm && item.type === 'income' && (
-        <SimpleIncomeForm
-          item={item as MonthlyIncome}
-          onSuccess={() => setShowEditForm(false)}
-          onCancel={() => setShowEditForm(false)}
-        />
-      )}
-      {showEditForm && item.type === 'expense' && !(item as MonthlyExpense).isCredit && (
-        <SimpleExpenseForm
-          item={item as MonthlyExpense}
-          onSuccess={() => setShowEditForm(false)}
-          onCancel={() => setShowEditForm(false)}
-        />
-      )}
-      {showEditForm && item.type === 'expense' && (item as MonthlyExpense).isCredit && (
-        <CreditExpenseForm
-          item={item as MonthlyExpense}
-          onSuccess={() => setShowEditForm(false)}
-          onCancel={() => setShowEditForm(false)}
-        />
-      )}
+      <AnimatePresence>
+        {showEditForm && item.type === 'income' && (
+          <SimpleIncomeForm
+            key="edit-income"
+            item={item as MonthlyIncome}
+            onSuccess={() => setShowEditForm(false)}
+            onCancel={() => setShowEditForm(false)}
+          />
+        )}
+        {showEditForm && item.type === 'expense' && !(item as MonthlyExpense).isCredit && (
+          <SimpleExpenseForm
+            key="edit-expense"
+            item={item as MonthlyExpense}
+            onSuccess={() => setShowEditForm(false)}
+            onCancel={() => setShowEditForm(false)}
+          />
+        )}
+        {showEditForm && item.type === 'expense' && (item as MonthlyExpense).isCredit && (
+          <CreditExpenseForm
+            key="edit-credit"
+            item={item as MonthlyExpense}
+            onSuccess={() => setShowEditForm(false)}
+            onCancel={() => setShowEditForm(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

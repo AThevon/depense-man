@@ -4,7 +4,8 @@ import { useState, useMemo } from 'react';
 import { MonthlyItem, MonthlyExpense, getPayCyclePosition, calculateCreditInfo } from '@/lib/types';
 import { useExpensesStore } from '@/lib/store/expenses';
 import { formatEuro } from '@/lib/format';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Plus, Wallet, Scale } from 'lucide-react';
 import MonthlyItemCard from './MonthlyItemCard';
 import { ItemTypeSelector } from '@/components/forms/ItemTypeSelector';
 import { SimpleExpenseForm } from '@/components/forms/SimpleExpenseForm';
@@ -21,11 +22,28 @@ const filters = [
 
 type FilterId = (typeof filters)[number]['id'];
 
-/**
- * Client Component pour le Dashboard
- * Lit les données depuis le store Zustand global
- * Gère l'interactivité (state, modals, mutations)
- */
+const EASE_SNAPPY: [number, number, number, number] = [0.2, 0, 0, 1];
+
+const heroContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.07,
+      delayChildren: 0.04,
+    },
+  },
+};
+
+const heroItem = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: EASE_SNAPPY },
+  },
+};
+
 export function DashboardClient() {
   const { items, deleteExpense, isLoading } = useExpensesStore();
 
@@ -37,7 +55,6 @@ export function DashboardClient() {
   const [filter, setFilter] = useState<FilterId>('all');
   const [simulatedDay, setSimulatedDay] = useState(() => new Date().getDate());
 
-  // Calcul du "reste à payer"
   const remainingAmount = useMemo(() => {
     const simulatedPosition = getPayCyclePosition(simulatedDay);
     return items
@@ -53,7 +70,26 @@ export function DashboardClient() {
       }, 0);
   }, [items, simulatedDay]);
 
-  // Items filtrés
+  const totalActiveExpenses = useMemo(() => {
+    return items
+      .filter((item): item is MonthlyExpense => item.type === 'expense')
+      .reduce((sum, item) => {
+        if (item.isCredit) {
+          const creditInfo = calculateCreditInfo(item);
+          return creditInfo?.isActive ? sum + creditInfo.monthlyAmount : sum;
+        }
+        return sum + item.amount;
+      }, 0);
+  }, [items]);
+
+  const totalIncome = useMemo(() => {
+    return items
+      .filter(item => item.type === 'income')
+      .reduce((sum, item) => sum + item.amount, 0);
+  }, [items]);
+
+  const balance = totalIncome - totalActiveExpenses;
+
   const filteredItems = useMemo(() => {
     if (filter === 'all') return items;
     if (filter === 'income') return items.filter(item => item.type === 'income');
@@ -120,60 +156,151 @@ export function DashboardClient() {
     }
   };
 
-  // Position simulée pour déterminer past/future
   const simulatedPosition = getPayCyclePosition(simulatedDay);
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-[960px] px-4 md:px-6 py-4 space-y-4">
-        {/* Hero Card - Reste à payer */}
-        <div className="glass rounded-2xl p-6">
-          <p className="text-sm text-muted-foreground mb-1">Reste à payer</p>
-          <p className="text-3xl font-bold tabular-nums text-destructive">
-            {formatEuro(remainingAmount)}
-          </p>
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-xs text-muted-foreground">Simuler jour :</span>
-            <select
-              value={simulatedDay}
-              onChange={(e) => setSimulatedDay(Number(e.target.value))}
-              className="text-xs bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] rounded-lg px-2 py-1 text-foreground"
+      <div className="mx-auto max-w-[960px] px-4 md:px-6 py-5 space-y-5">
+        {/* Hero Card - Aurora Cockpit */}
+        <motion.div
+          variants={heroContainer}
+          initial="hidden"
+          animate="show"
+          className="relative overflow-hidden glass rounded-3xl p-6 md:p-8"
+        >
+          {/* Aurora ambient glow */}
+          <div
+            aria-hidden
+            className="aurora-glow pointer-events-none absolute -top-24 -left-24 h-[28rem] w-[28rem] rounded-full"
+            style={{
+              background:
+                'radial-gradient(circle at center, rgba(251,146,60,0.20) 0%, rgba(251,146,60,0.05) 40%, transparent 70%)',
+            }}
+          />
+          {/* Secondary cool glow for depth */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-32 -right-20 h-[22rem] w-[22rem] rounded-full opacity-40"
+            style={{
+              background:
+                'radial-gradient(circle at center, rgba(239,68,68,0.12) 0%, transparent 65%)',
+            }}
+          />
+
+          <div className="relative">
+            {/* Label with pulse dot */}
+            <motion.div variants={heroItem} className="flex items-center gap-2 mb-3">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400/60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
+              </span>
+              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                Reste à payer
+              </p>
+            </motion.div>
+
+            {/* Main amount with gradient */}
+            <motion.p
+              variants={heroItem}
+              className="hero-amount font-display text-5xl sm:text-6xl md:text-7xl font-bold tabular-nums tracking-tight leading-none"
             >
-              {Array.from({ length: 31 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  J{i + 1}
-                </option>
-              ))}
-            </select>
+              {formatEuro(remainingAmount)}
+            </motion.p>
+
+            {/* Day simulator chip */}
+            <motion.div variants={heroItem} className="mt-4">
+              <div className="inline-flex items-center gap-2 pl-3 pr-1 py-1 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.06)] transition-colors">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Jour
+                </span>
+                <select
+                  value={simulatedDay}
+                  onChange={(e) => setSimulatedDay(Number(e.target.value))}
+                  className="text-xs font-semibold bg-transparent text-foreground border-0 outline-none cursor-pointer pr-1.5 py-1"
+                >
+                  {Array.from({ length: 31 }, (_, i) => (
+                    <option key={i + 1} value={i + 1} className="bg-[#1a1a1f]">
+                      J{i + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </motion.div>
+
+            {/* Stats row - persistent metrics */}
+            <motion.div
+              variants={heroItem}
+              className="mt-7 pt-5 border-t border-[rgba(255,255,255,0.06)] grid grid-cols-2 gap-4"
+            >
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Wallet className="h-3 w-3 text-muted-foreground" />
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Total dépenses
+                  </p>
+                </div>
+                <p className="font-display text-xl md:text-2xl font-bold tabular-nums text-foreground/95">
+                  {formatEuro(totalActiveExpenses)}
+                </p>
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Scale className="h-3 w-3 text-muted-foreground" />
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Balance
+                  </p>
+                </div>
+                <p
+                  className={`font-display text-xl md:text-2xl font-bold tabular-nums ${
+                    balance >= 0 ? 'text-success' : 'text-destructive'
+                  }`}
+                >
+                  {balance >= 0 ? '+' : ''}
+                  {formatEuro(balance)}
+                </p>
+              </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Filtres */}
-        <div className="flex gap-1">
-          {filters.map((f) => (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={`relative px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
-                filter === f.id
-                  ? 'text-white'
-                  : 'text-foreground/60 hover:text-foreground'
-              }`}
-            >
-              {filter === f.id && (
-                <motion.div
-                  layoutId="filter-pill"
-                  className="absolute inset-0 gradient-active rounded-lg"
-                  transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }}
-                />
-              )}
-              <span className="relative z-10">{f.label}</span>
-            </button>
-          ))}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.32, ease: EASE_SNAPPY }}
+          className="flex"
+        >
+          <div className="inline-flex bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-xl p-1 gap-0.5">
+            {filters.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                className={`relative px-3.5 py-1.5 text-xs font-medium transition-colors duration-200 rounded-lg ${
+                  filter === f.id
+                    ? 'text-white'
+                    : 'text-foreground/60 hover:text-foreground'
+                }`}
+              >
+                {filter === f.id && (
+                  <motion.div
+                    layoutId="filter-pill"
+                    className="absolute inset-0 gradient-active rounded-lg"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }}
+                  />
+                )}
+                <span className="relative z-10">{f.label}</span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Liste des items */}
-        <div className="space-y-0">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
+          className="space-y-0"
+        >
           {filteredItems.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">
@@ -224,48 +351,56 @@ export function DashboardClient() {
               return elements;
             })()
           )}
-        </div>
+        </motion.div>
 
         {/* Bouton Ajouter */}
-        <button
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+          whileTap={{ scale: 0.985 }}
           onClick={handleAddItem}
-          className="w-full glass rounded-2xl py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="group w-full glass rounded-2xl py-4 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-[rgba(255,255,255,0.05)] transition-all flex items-center justify-center gap-2"
         >
-          + Ajouter
-        </button>
+          <Plus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
+          <span>Ajouter</span>
+        </motion.button>
       </div>
 
-      {/* Form Modals */}
-      {showTypeSelector && (
-        <ItemTypeSelector
-          onSelect={handleTypeSelect}
-          onCancel={handleFormCancel}
-        />
-      )}
-
-      {showExpenseForm && (
-        <SimpleExpenseForm
-          item={editingItem}
-          onSuccess={handleFormSuccess}
-          onCancel={handleFormCancel}
-        />
-      )}
-
-      {showCreditForm && (
-        <CreditExpenseForm
-          item={editingItem as MonthlyExpense | undefined}
-          onSuccess={handleFormSuccess}
-          onCancel={handleFormCancel}
-        />
-      )}
-
-      {showIncomeForm && (
-        <SimpleIncomeForm
-          item={editingItem}
-          onSuccess={handleFormSuccess}
-          onCancel={handleFormCancel}
-        />
-      )}
+      {/* Form Modals — wrapped in AnimatePresence for slide-out exits */}
+      <AnimatePresence>
+        {showTypeSelector && (
+          <ItemTypeSelector
+            key="type-selector"
+            onSelect={handleTypeSelect}
+            onCancel={handleFormCancel}
+          />
+        )}
+        {showExpenseForm && (
+          <SimpleExpenseForm
+            key="expense-form"
+            item={editingItem}
+            onSuccess={handleFormSuccess}
+            onCancel={handleFormCancel}
+          />
+        )}
+        {showCreditForm && (
+          <CreditExpenseForm
+            key="credit-form"
+            item={editingItem as MonthlyExpense | undefined}
+            onSuccess={handleFormSuccess}
+            onCancel={handleFormCancel}
+          />
+        )}
+        {showIncomeForm && (
+          <SimpleIncomeForm
+            key="income-form"
+            item={editingItem}
+            onSuccess={handleFormSuccess}
+            onCancel={handleFormCancel}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

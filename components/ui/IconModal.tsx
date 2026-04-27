@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { BottomSheet } from './BottomSheet';
 import {
   // Maison & Logement
   Home, Building, Key, Bed, Sofa, Lightbulb, Thermometer, Shield, Hammer, PaintBucket,
@@ -45,13 +45,12 @@ import {
   Baby, Users2, PartyPopper, Gamepad as GameIcon, Backpack,
 
   // Autres
-  Star, Flag, Clock, Bell, Search, X,
+  Star, Flag, Clock, Bell, Search,
   Plus, Minus, Check, AlertCircle, Info, HelpCircle, Sun, Moon
 } from 'lucide-react';
 import { IconOption } from '@/lib/types';
 
 interface IconModalProps {
-  isOpen: boolean;
   onClose: () => void;
   selectedIcon?: string;
   onIconSelect: (iconName: string) => void;
@@ -264,11 +263,9 @@ const CATEGORIES = [
     ['baby', 'users-2', 'party-popper', 'game-icon', 'backpack'].includes(icon.name)) },
 ];
 
-const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalProps) => {
+const IconModal = ({ onClose, selectedIcon, onIconSelect }: IconModalProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-
-  if (!isOpen) return null;
 
   const currentCategory = CATEGORIES.find(cat => cat.id === selectedCategory) || CATEGORIES[0];
   const filteredIcons = currentCategory.icons.filter(icon =>
@@ -278,87 +275,72 @@ const IconModal = ({ isOpen, onClose, selectedIcon, onIconSelect }: IconModalPro
   const handleIconSelect = (iconName: string) => {
     onIconSelect(iconName);
     onClose();
-    setSearchQuery('');
-    setSelectedCategory('all');
   };
 
-  return createPortal(
-    <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4 md:p-10"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="bg-[#1a1a1f] border border-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground">Choisir une icône</h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[rgba(255,255,255,0.08)] transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+  return (
+    <BottomSheet onClose={onClose} title="Choisir une icône" ariaLabel="Choisir une icône">
+      {/* Sticky search + categories */}
+      <div className="sticky top-0 z-10 bg-[#16161b] px-5 pt-1 pb-3 space-y-3 border-b border-[rgba(255,255,255,0.05)]">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Rechercher une icône..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            inputMode="search"
+            autoComplete="off"
+            className="w-full h-11 pl-10 pr-4 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] rounded-xl text-foreground placeholder:text-muted-foreground outline-none text-base focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-shadow"
+          />
         </div>
 
-        {/* Search + Category pills */}
-        <div className="px-5 py-4 border-b border-border space-y-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Rechercher une icône..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-[rgba(255,255,255,0.05)] border border-border rounded-xl text-foreground placeholder:text-muted-foreground outline-none text-sm"
-            />
-          </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => setSelectedCategory(category.id)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  selectedCategory === category.id
-                    ? 'gradient-active text-white'
-                    : 'bg-[rgba(255,255,255,0.06)] text-muted-foreground hover:text-foreground hover:bg-[rgba(255,255,255,0.1)]'
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Icons Grid — scrollable */}
-        <div className="overflow-y-auto p-5">
-          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
-            {filteredIcons.map((icon) => (
-              <button
-                key={icon.name}
-                onClick={() => handleIconSelect(icon.name)}
-                className={`aspect-square flex items-center justify-center rounded-xl transition-all duration-150 hover:scale-110 active:scale-95 ${
-                  selectedIcon === icon.name
-                    ? 'bg-primary/15 text-primary ring-1 ring-primary'
-                    : 'bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.1)] text-foreground'
-                }`}
-                title={icon.name}
-              >
-                <icon.icon className="h-5 w-5" />
-              </button>
-            ))}
-          </div>
-
-          {filteredIcons.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Search className="h-10 w-10 mx-auto mb-3 opacity-50" />
-              <p className="text-sm">Aucune icône trouvée</p>
-            </div>
-          )}
+        <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {CATEGORIES.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => setSelectedCategory(category.id)}
+              className={`shrink-0 h-9 px-3.5 rounded-full text-xs font-medium transition-colors active:scale-95 ${
+                selectedCategory === category.id
+                  ? 'gradient-active text-white'
+                  : 'bg-[rgba(255,255,255,0.06)] text-muted-foreground active:bg-[rgba(255,255,255,0.12)]'
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
         </div>
       </div>
-    </div>,
-    document.body
+
+      {/* Icons grid */}
+      <div className="px-5 py-4">
+        <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-9 gap-2">
+          {filteredIcons.map((icon) => (
+            <button
+              key={icon.name}
+              type="button"
+              onClick={() => handleIconSelect(icon.name)}
+              className={`aspect-square flex items-center justify-center rounded-xl transition-transform duration-150 active:scale-90 ${
+                selectedIcon === icon.name
+                  ? 'bg-primary/15 text-primary ring-1 ring-primary'
+                  : 'bg-[rgba(255,255,255,0.04)] active:bg-[rgba(255,255,255,0.1)] text-foreground'
+              }`}
+              title={icon.name}
+              aria-label={icon.name}
+            >
+              <icon.icon className="h-5 w-5" />
+            </button>
+          ))}
+        </div>
+
+        {filteredIcons.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            <Search className="h-10 w-10 mx-auto mb-3 opacity-50" />
+            <p className="text-sm">Aucune icône trouvée</p>
+          </div>
+        )}
+      </div>
+    </BottomSheet>
   );
 };
 

@@ -4,6 +4,7 @@ import { MonthlyItem, MonthlyExpense } from '@/lib/types';
 import { calculateCreditInfoAtDate } from '@/lib/creditCalculations';
 import { Icon } from '@/components/ui/Icon';
 import { Button } from '@/components/ui/button';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface MonthlyItemCardProps {
@@ -197,45 +198,46 @@ const MonthlyItemCard = ({ item, onEdit, onDelete, loading = false, isPast = fal
         </div>
       </div>
 
-      {/* Modal de confirmation de suppression */}
+      {/* Confirmation de suppression — bottom sheet */}
       <AnimatePresence>
         {showDeleteConfirm && (
-          <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-[#1a1a1f] rounded-lg p-6 text-center space-y-4 shadow-xl border border-border"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            >
-              <p className="text-sm text-foreground">
-                Supprimer &quot;{item.name}&quot; ?
-              </p>
-              <div className="flex space-x-2">
+          <BottomSheet
+            key="delete-confirm"
+            onClose={() => setShowDeleteConfirm(false)}
+            title="Supprimer cet élément ?"
+            footer={
+              <div className="flex gap-2.5">
                 <Button
-                  variant="secondary"
-                  size="sm"
+                  type="button"
+                  variant="outline"
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={loading}
+                  className="flex-1 h-12"
                 >
                   Annuler
                 </Button>
                 <Button
+                  type="button"
                   variant="destructive"
-                  size="sm"
                   onClick={handleDelete}
                   disabled={loading}
+                  className="flex-1 h-12"
                 >
                   Supprimer
                 </Button>
               </div>
-            </motion.div>
-          </motion.div>
+            }
+          >
+            <div className="px-5 pb-5 pt-1 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="h-6 w-6 text-destructive" />
+              </div>
+              <p className="text-sm text-foreground">
+                <span className="font-semibold">&quot;{item.name}&quot;</span>{' '}
+                <span className="text-muted-foreground">sera supprimé définitivement.</span>
+              </p>
+            </div>
+          </BottomSheet>
         )}
       </AnimatePresence>
     </motion.div>

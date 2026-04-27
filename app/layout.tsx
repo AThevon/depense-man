@@ -1,15 +1,8 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { fontVariables } from "@/lib/fonts";
 import { StoreInitializer } from "@/components/providers/StoreInitializer";
 import { AppLayout } from "@/components/layout/AppLayout";
 import "./globals.css";
-
-const fontOutfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Dépense-Man",
@@ -74,7 +67,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-icon.png" />
         <link rel="mask-icon" href="/web-app-manifest-192x192.png" color="#0a0a0b" />
       </head>
-      <body className={`${fontOutfit.variable} antialiased`}>
+      <body className={`${fontVariables} antialiased`}>
         <StoreInitializer>
           <AppLayout>
             {children}

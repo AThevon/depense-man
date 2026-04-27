@@ -48,7 +48,7 @@ export function StatsPage() {
           {/* Dépenses */}
           <div className="glass rounded-2xl p-4">
             <p className="text-sm text-muted-foreground mb-1">Dépenses</p>
-            <p className="text-2xl font-bold tabular-nums text-destructive">
+            <p className="font-display text-2xl font-bold tabular-nums text-destructive">
               {formatEuro(expenseBreakdown.total)}
             </p>
             <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
@@ -60,7 +60,7 @@ export function StatsPage() {
           {/* Revenus */}
           <div className="glass rounded-2xl p-4">
             <p className="text-sm text-muted-foreground mb-1">Revenus</p>
-            <p className="text-2xl font-bold tabular-nums text-success">
+            <p className="font-display text-2xl font-bold tabular-nums text-success">
               {formatEuro(calculation.totalIncome)}
             </p>
           </div>

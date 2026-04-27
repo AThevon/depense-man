@@ -1,68 +1,70 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CreditCard, Wallet, TrendingUp, X } from 'lucide-react';
+import { CreditCard, Wallet, TrendingUp, ChevronRight } from 'lucide-react';
+import { motion } from 'motion/react';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 
 interface ItemTypeSelectorProps {
   onSelect: (type: 'expense' | 'credit' | 'income') => void;
   onCancel: () => void;
 }
 
+const options = [
+  {
+    type: 'expense' as const,
+    label: 'Dépense simple',
+    description: 'Paiement unique chaque mois',
+    icon: Wallet,
+    color: 'text-destructive',
+    bg: 'bg-destructive/10',
+  },
+  {
+    type: 'credit' as const,
+    label: 'Crédit',
+    description: 'Mensualités sur une durée fixe',
+    icon: CreditCard,
+    color: 'text-warning',
+    bg: 'bg-warning/10',
+  },
+  {
+    type: 'income' as const,
+    label: 'Revenu',
+    description: 'Salaire, prime, autre rentrée',
+    icon: TrendingUp,
+    color: 'text-success',
+    bg: 'bg-success/10',
+  },
+];
+
 export function ItemTypeSelector({ onSelect, onCancel }: ItemTypeSelectorProps) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Que voulez-vous ajouter ?</h2>
-            <Button variant="ghost" size="sm" onClick={onCancel}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Dépense Simple */}
-            <button
-              onClick={() => onSelect('expense')}
-              className="group relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all"
+    <BottomSheet onClose={onCancel} title="Que voulez-vous ajouter ?">
+      <div className="px-5 pb-6 pt-1 space-y-2">
+        {options.map((opt, i) => {
+          const Icon = opt.icon;
+          return (
+            <motion.button
+              key={opt.type}
+              type="button"
+              onClick={() => onSelect(opt.type)}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.04 + i * 0.05, duration: 0.3, ease: [0.2, 0, 0, 1] }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center gap-4 p-4 rounded-2xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.05)] active:bg-[rgba(255,255,255,0.07)] transition-colors text-left"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-destructive/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Wallet className="h-10 w-10 sm:h-12 sm:w-12 mb-3 sm:mb-4 text-destructive group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold text-base sm:text-lg text-center">Dépense simple</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center mt-2">
-                Paiement unique
-              </p>
-            </button>
-
-            {/* Crédit */}
-            <button
-              onClick={() => onSelect('credit')}
-              className="group relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-warning/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CreditCard className="h-10 w-10 sm:h-12 sm:w-12 mb-3 sm:mb-4 text-warning group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold text-base sm:text-lg text-center">Crédit</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center mt-2">
-                Paiement mensuel
-              </p>
-            </button>
-
-            {/* Revenu */}
-            <button
-              onClick={() => onSelect('income')}
-              className="group relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-success/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <TrendingUp className="h-10 w-10 sm:h-12 sm:w-12 mb-3 sm:mb-4 text-success group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold text-base sm:text-lg text-center">Revenu</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center mt-2">
-                Salaire, prime...
-              </p>
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+              <div className={`flex-shrink-0 h-12 w-12 rounded-xl flex items-center justify-center ${opt.bg}`}>
+                <Icon className={`h-6 w-6 ${opt.color}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-foreground">{opt.label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+            </motion.button>
+          );
+        })}
+      </div>
+    </BottomSheet>
   );
 }

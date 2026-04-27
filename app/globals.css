@@ -56,6 +56,50 @@
     background: linear-gradient(135deg, #fbbf24, #f97316, #ef4444);
   }
 
+  /* Hero aurora — radial glow that breathes inside the hero card */
+  @keyframes aurora-breathe {
+    0%, 100% {
+      opacity: 0.55;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: translate3d(18px, -10px, 0) scale(1.14);
+    }
+  }
+
+  .aurora-glow {
+    animation: aurora-breathe 9s ease-in-out infinite;
+  }
+
+  /* Hero amount — gradient text mask (Safari-safe) */
+  .hero-amount {
+    background: linear-gradient(135deg, #fcd34d 0%, #fb923c 45%, #ef4444 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* List item dividers — subtle horizontal fade */
+  .row-divider {
+    border-bottom: 1px solid transparent;
+    border-image: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(255, 255, 255, 0.07) 20%,
+      rgba(255, 255, 255, 0.07) 80%,
+      transparent 100%
+    ) 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aurora-glow,
+    .animate-ping {
+      animation: none !important;
+    }
+  }
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -143,6 +187,15 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-outfit), system-ui, sans-serif;
+    font-family: var(--font-body), system-ui, sans-serif;
   }
+}
+
+.font-display {
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.font-title {
+  font-family: var(--font-title), system-ui, sans-serif;
 }

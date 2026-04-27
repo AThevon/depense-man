@@ -30,11 +30,11 @@ export function AppHeader() {
                 alt="Dépense-Man Logo"
                 width={40}
                 height={40}
-                className="rounded-lg object-cover"
+                className="object-contain"
                 priority
               />
             </div>
-            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+            <h1 className="font-title text-lg sm:text-xl text-white tracking-tight">
               D-Man
             </h1>
           </div>
